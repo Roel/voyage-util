@@ -1,0 +1,293 @@
+#!/usr/bin/perl -wT
+use strict;
+
+$ENV{"PATH"} = "";
+
+sub helpmsg ();
+my @prg = split /\//, $0;
+my $prg = $prg[-1];
+
+##rqd programs.
+if((!(-x '/usr/bin/sqlite3' ))||(!(-x '/usr/sbin/tcpdump'))) {
+	print "\n    sqlite3 or tcpdump not installed. These are required by $prg.\n";
+	exit();
+}
+
+##number of command line options
+if($#ARGV < 0) {
+	print "$#ARGV Number of arguments error.";
+	helpmsg ();
+	exit ();
+}
+
+##interface
+my $intstr1 = `/sbin/ip link show`;
+$intstr1 =~ s/\n/:::/g;
+$intstr1 =~ s/\s+/\ /g;
+my @intstr1 = split /:::/, $intstr1;
+my $intcount1 = @intstr1 / 2;
+my $interface; my @str; my @pro;
+foreach my $int (0..($intcount1 - 1)) {
+ 	@str = split /:\s/, $intstr1[($int * 2)];
+	@pro = split /\s/, $intstr1[($int * 2 + 1)];
+	if(($str[1] eq $ARGV[0]) && ($pro[1] eq 'link/ether')) {
+		$interface = $str[1];
+		last;
+	}elsif($int == ($intcount1 - 1)){
+		print "\nNo matching ethernet interface.\n";
+		helpmsg ();
+		exit();
+	} 
+}
+
+my $select; my $groupby='', my $bysadd='', my $bysport='', my $bydadd='', my $bydport='', my $byproto='', my $grpbyset=0, my @hol;
+my $i=0;
+foreach my $int (1 .. $#ARGV) {
+	if ($ARGV[$int] eq 'src-addr' ) {
+		$hol[$i] = 'a';
+		$i = $i + 1;
+	}elsif ($ARGV[$int] eq 'src-port' ) {
+		$hol[$i] = 'b';
+		$i = $i + 1;
+	}elsif ($ARGV[$int] eq 'dst-addr' ) {
+		$hol[$i] = 'c';
+		$i = $i + 1;
+	}elsif ($ARGV[$int] eq 'dst-port' ) {
+		$hol[$i] = 'd';
+		$i = $i + 1;
+	}elsif ($ARGV[$int] eq 'proto' ) {
+		$hol[$i] = 'e';
+		$i = $i + 1;
+	}else{
+		print "\nUnknown option: $ARGV[$int]\n";
+		helpmsg ();
+		exit();
+	}
+}
+my $sa=''; my $sp=''; my $da=''; my $dp=''; my $pr='';
+@hol = sort(@hol);
+foreach my $int (@hol) {
+	if ($int eq 'a' ) {
+		if($grpbyset == 1) { 
+			$bysadd = ', sadd';
+		}else{
+			$bysadd = 'sadd';
+			$grpbyset = 1;
+		}
+		$sa = '2 ';
+		next;
+	}elsif($int eq 'b' ) {
+		if($grpbyset == 1) { 
+			$bysport = ', sport';
+		}else{
+			$bysport = 'sport';
+			$grpbyset = 1;
+		}
+		$sp = '3 ';
+		next;
+	}elsif($int eq 'c' ) {
+		if($grpbyset == 1) { 
+			$bydadd = ', dadd';
+		}else{
+			$bydadd = 'dadd';
+			$grpbyset = 1;
+		}
+		$da = '2 ';
+		next;
+	}elsif($int eq 'd' ) {
+		if($grpbyset == 1) { 
+			$bydport = ', dport';
+		}else{
+			$bydport = 'dport';
+			$grpbyset = 1;
+		}
+		$dp = '3 ';
+		next;
+	}elsif($int eq 'e' ) {
+		if($grpbyset == 1) { 
+			$byproto = ', proto';
+		}else{
+			$byproto = 'proto';
+			$grpbyset = 1;
+		}
+		$pr = '3 ';
+		next;
+	}else{
+		helpmsg ();
+		exit();
+	}
+}
+my $header = "tx rx $bysadd$bysport$bydadd$bydport$byproto";
+$header =~ s/\,+//g;
+my @header = split /\s+/, $header;
+my $select1 = "$bysadd$bysport$bydadd$bydport$byproto";
+if($select1 eq '') {
+	$select = "SELECT sum(tx), sum(rx)";
+	$groupby = "ORDER BY sum(rx) DESC";
+}else{
+	$select = "SELECT sum(tx), sum(rx), $bysadd$bysport$bydadd$bydport$byproto";
+	$groupby = "GROUP BY $bysadd$bysport$bydadd$bydport$byproto ORDER BY sum(rx) DESC"; 
+}
+my $size1 = "1 1 $sa$sp$da$dp$pr";
+my @size = split /\s+/, $size1;
+my $hdcnt = @size;
+##my $path = myfile;
+my @l, my $trans = 0, my $period = 2, my $llen = 0;
+my @label = ('tx:', 'rx:', 'src-addr:', 'src-port:', 'dst-addr:', 'dst-port:', 'proto:');
+my $sqlstr = '';
+#dangerously untaint
+$interface =~ /(.*)/;
+$interface = $1;
+my $if = `/sbin/ifconfig $interface`;
+my @if = split /\s+/, $if;
+my $ins = 0;
+my $wcount =0;
+my $ifcount = 0;
+my $tint =  `/bin/date +%s.%N`;
+chomp($tint);
+
+my $fl = "/rw/var/trafmondb";
+if(!( -f $fl )) {
+	(`/usr/bin/sqlite3 /rw/var/trafmondb "CREATE TABLE 'tcpDump' ('time', 'tx', 'rx', 'sadd', 'sport', 'dadd', 'dport', 'proto');"`); 
+}
+
+open (PO, "/usr/sbin/tcpdump -lpttqnve -i $interface |") or die "Can't run tcpdump: $!\n";
+
+while(1) {
+	#$wcount = $wcount + 1;
+	if (defined(my $tcpout = <PO>)) {
+		chomp($tcpout);
+		if($tcpout =~ /\ IP\ \(tos/i ) {
+			$tcpout =~ s/\ IP\ \(tos/\ \(tos/;
+			if($tcpout =~ /tcp/i ) {
+				$tcpout =~ s/\[DF\],/\[DF\],\ proto\:\ TCP\ \(x\),/;
+			}elsif($tcpout =~ /udp/i ){
+				$tcpout =~ s/\[DF\],/\[DF\],\ proto\:\ UDP\ \(x\),/;
+			}elsif($tcpout =~ /icmp/i ) {
+				$tcpout =~ s/\[DF\],/\[DF\],\ proto\:\ ICMP\ \(x\),/; ##print "$tcpout \n\n";
+				$tcpout =~ s/\[none\],/\[DF\],\ proto\:\ ICMP\ \(x\),/; ##print "$tcpout \n\n";
+			}
+		}
+		my $proto = '', my $sport = '', my $dport = '', my $tx = 0, my $rx = 0;
+		my @src, my $src, my @dst, my $dst, my $inter, my $interp;
+		@l = split /\s+/, $tcpout;
+		$llen = @l;
+		if($llen > 24 ) {
+			$l[13] =~ s/\)//g;
+			$l[22] =~ s/\://g;
+			$l[24] =~ s/\://g;
+			$proto = $l[18];
+		}
+		$ins = 0;
+		if(($proto =~ /udp/i ) || ($proto =~ /tcp/i) || ($proto =~ /icmp/i)) {
+			##print "\n\n $proto, @l \n\n";
+			$ins = 1;
+			@src = split /\./, $l[22];
+			@dst = split /\./, $l[24];
+			$src = @src;
+			$dst = @dst;
+			$sport = "-";
+			$dport = "-";
+			if ($src == 5) {
+				$l[22] = "$src[0].$src[1].$src[2].$src[3]";
+				$sport = "$src[4]";
+			}
+			if ($dst == 5) {
+				$l[24] = "$dst[0].$dst[1].$dst[2].$dst[3]";
+				$dport = "$dst[4]";
+			}
+			if (($l[23] =~ /udp/i) || (($l[23] =~ /bad/ ) && ($l[24] =~ /udp/))) {
+				$l[23] = 'udp';
+			}
+			$l[6] =~ s/\://g;
+			if ($l[1] =~ /$if[4]/i ) {
+				$tx = $l[6];
+				$rx = 0;
+			}else{
+				$tx = 0;
+				$rx = $l[6];
+				$inter = $l[22];
+				$interp = $sport;
+				$l[22] = $l[24];
+				$l[24] = $inter;
+				$sport = $dport;
+				$dport = $interp;
+			}
+		}
+		if($ins == 1) {
+			$sqlstr = "$sqlstr INSERT INTO 'tcpDump' VALUES('$l[0]', '$tx', '$rx', '$l[22]', '$sport', '$l[24]', '$dport', '$proto')\;";
+			$ins = 0;
+		}
+	}else{
+			print "i am sleeping.............\n\n";
+			`/bin/sleep 0.05`;
+	}
+	if((time() - $tint) > $period) {
+		my $go = 0;
+		my $data = '';
+		####untaint, actually doing nothing
+		$sqlstr =~ /(.*)/; $sqlstr = $1; $select =~ /(.*)/; $select = $1;
+		$data = (`/usr/bin/sqlite3 /rw/var/trafmondb "BEGIN TRANSACTION; $sqlstr $select FROM tcpDump $groupby"`);
+		$go = 1;
+		$sqlstr = '';
+		my $pactual = (`/bin/date +%s.%N`) - $tint; ##$period;
+		my @data = split /\n/, $data;
+		my $n = @data;
+		print "\n\n";
+		my $k = 0;
+		foreach $k (0..($hdcnt - 1)) {
+			if($size[$k] == 1) {
+				printf("%12s ", $header[$k]);
+			}elsif($size[$k]== 2) {
+				printf("%18s ", $header[$k]);
+			}elsif($size[$k] == 3) {
+				printf("%8s ", $header[$k]);
+			}
+		}
+		print "\n";
+		my $j = 0;
+		foreach $j (0..$n-1) {
+			my @fields = split /\|/, $data[$j];
+			my $m = @fields;
+			foreach $i (0..$m-1) {
+				my $units = 'bps';
+				if(($i == 0) || ($i == 1)) {
+					if(($fields[$i] * 8 / $pactual) > 1024 ) {
+						$fields[$i] = (($fields[$i] * 8 ) / ($pactual * 1024));
+						$units = 'Kbps';
+						if($fields[$i] > 1024 ) {
+							$fields[$i] = ($fields[$i] / 1024);
+							$units = 'Mbps';
+						}
+					}else{
+						$fields[$i] = ($fields[$i] * 8 / $pactual );
+					}
+				}
+				if($size[$i] == 1) {
+					printf("%7.1f %4s ", $fields[$i], $units);
+				}elsif($size[$i] == 2) {
+					printf("%18s ", $fields[$i]);
+				}elsif($size[$i] == 3) {
+					printf("%8s ", $fields[$i]);
+				}
+			}
+			print"\n";
+		}
+		$tint = `/bin/date +%s.%N`;
+	}
+}
+sub helpmsg ()  {
+		print "\n\nFormat of program is:\n";
+		print "    $prg interface [sadd src-port dadd dst-port proto]\n";
+		print "    interface is the name of an Ethernet Interface, it is required. Eg: eth0\n";
+		print "\nOptional parameters\n";
+		print "    src-addr will cause $prg to display source ip addresses.\n";
+		print "    src-port will cause $prg to display source port addresses.\n";
+		print "    dst-addr will cause $prg to display destination ip addresses.\n";
+		print "    dst-port will cause $prg to display destination port addresses.\n";
+		print "    proto will cause $prg to display protocols. Only tcp, udp and icmp are supported.\n";
+		print "Examples:\n";
+		print "    $prg eth0\n";
+		print "    $prg eth0 src-addr\n";
+		print "    $prg eth0 src-addr dst-port proto\n";
+}

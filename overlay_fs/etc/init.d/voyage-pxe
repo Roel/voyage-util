@@ -1,0 +1,105 @@
+#! /bin/sh
+#
+# skeleton  example file to build /etc/init.d/ scripts.
+#       This file should be used to construct scripts for /etc/init.d.
+#
+#       Written by Miquel van Smoorenburg <miquels@cistron.nl>.
+#       Modified for Debian
+#       by Ian Murdock <imurdock@gnu.ai.mit.edu>.
+#
+# Version:  @(#)skeleton  1.9  26-Feb-2001  miquels@cistron.nl
+#
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+NAME=voyage-pxe
+DESC=voyage-pxe
+
+#test -x $DAEMON || exit 0
+
+# Include voyage-util defaults if available
+if [ -f /etc/default/voyage-util ] ; then
+    . /etc/default/voyage-util
+fi
+
+set -e
+
+PXEDEFAULT=/tftpboot/pxelinux.cfg/default
+INITTAB=/etc/inittab
+case $1 in
+	'start')
+		SERIAL=$2
+		if [ ! -z $SERIAL ] ; then
+		
+			if [ "$SERIAL" == "0" ] ; then
+				echo -n "Setting console display... "
+				if [ ! -f $PXEDEFAULT.pxe ] ; then cp $PXEDEFAULT $PXEDEFAULT.pxe ; fi
+				sed -i -e "s/console 0/console 1/" $PXEDEFAULT 
+				sed -i -e "/^serial/ D" $PXEDEFAULT 
+				sed -i -e "s/ console.*$//" $PXEDEFAULT 
+				echo "Done."
+			else
+				echo -n "Setting serial $SERIAL to $INITTAB ... "
+				if [ ! -f $INITTAB.pxe ] ; then cp $INITTAB $INITTAB.pxe ; fi
+				sed -i -e "s/9600/${SERIAL}/" $INITTAB 
+				echo "Done."
+				
+				echo -n "Setting serial $SERIAL to $PXEDEFAULT ... "
+				if [ ! -f $PXEDEFAULT.pxe ] ; then cp $PXEDEFAULT $PXEDEFAULT.pxe ; fi
+				sed -i -e "s/9600/${SERIAL}/" $PXEDEFAULT 
+				echo "Done."
+			fi
+		else
+			echo "No serial setting is supplied, using 9600"
+		fi
+		
+		echo -n "Setting up eth0 to 192.168.1.200 ... "
+		ifdown eth0
+		ifconfig eth0 192.168.1.200 netmask 255.255.255.0 up 
+		echo "Done."
+		
+		#echo -n "mounting /media ... "
+		#mount -o loop /live/image/live/filesystem.squashfs /media
+		
+		#if [ ! -d /filesystem.squashfs ] ; then mkdir /filesystem.squashfs ; fi
+		#mount -o loop /live_media/casper/filesystem.squashfs /filesystem.squashfs
+		#mount -n -t unionfs -o dirs=/cow=rw:/filesystem.squashfs=ro unionfs /media
+		#echo "Done."
+		
+		#/etc/init.d/nfs-user-server restart
+		/etc/init.d/nfs-kernel-server restart
+		/etc/init.d/atftpd restart
+		;;
+	'stop')
+		#/etc/init.d/nfs-user-server stop
+		/etc/init.d/nfs-kernel-server stop
+		/etc/init.d/atftpd stop
+		
+		#echo -n "Un-mounting /media ... "
+		#umount /media
+		#umount /filesystem.squashfs
+		#echo "Done."
+		
+		echo -n "Restoring eth0 ... "
+		ifconfig eth0 down	
+		ifup eth0		
+		echo "Done."
+		
+		echo -n "Restoring $INITTAB ... "
+		if [ -f $INITTAB.pxe ] ; then 
+			mv $INITTAB.pxe $INITTAB
+		fi
+		echo "Done."
+		
+		echo -n "Restoring $PXEDEFAULT ... "
+		if [ -f $PXEDEFAULT.pxe ] ; then 
+			mv $PXEDEFAULT.pxe $PXEDEFAULT
+		fi
+		echo "Done."
+		;;
+	*)
+		echo "Usage: `basename $0` {start <serial rate>|stop}"
+		exit 1
+	    ;;
+esac
+
+exit 0

@@ -1,0 +1,44 @@
+#!/bin/bash
+#
+#	This is the main shell script for working with the Voyage Linux
+#	distribution files.  It does very little, except for calling upon
+#	other scripts in accordance with choices made by the user.
+#
+#	First we need to remember which directory we were loaded from
+
+GENDIR=`pwd`
+cd `dirname $0`
+EXECDIR=`pwd`
+cd $GENDIR
+
+# most of the real work is done within common functions loaded here
+source $EXECDIR/script-utils.sh
+# the config file contains data saved from previous invocations
+# it is read from the current directory
+CONFIGFILE=.voyage-setup.conf
+read_config $CONFIGFILE
+
+if [ "$DISTDIR" == "" ]; then
+	DISTDIR=`dirname $0`
+	save_config_var "DISTDIR"
+fi
+
+# here we define the different choices which can be made by the user
+OPTIONS="Specify Distribution Directory%Copy Distribution to Target%Setup Target Bootstrap%Configure Serial Port%Exit"
+while true
+do
+	# Work starts here.  The default is set to "Copy Distribution"
+	ask_setting "What would you like to do?" "$OPTIONS" 1
+
+	case $v in
+		1) ask_distrib_dir $DISTDIR;;
+		2) $EXECDIR/copyfiles.sh;;
+		3) $EXECDIR/setboot.sh;;
+		4) $EXECDIR/setspeed.sh;;
+		5) break;;
+		*) err_quit "Invalid return code from ask_setting";;
+	esac
+done
+
+write_config $CONFIGFILE
+

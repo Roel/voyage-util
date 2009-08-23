@@ -1,0 +1,93 @@
+#!/bin/bash
+
+# Compare files (present/not present, size, content) between two directories
+# Param 1: First directory, Param 2: Second directory, Param 3: 1=>do diff
+usage() {
+  echo "Usage: test {virgin dir} {customized dir}"
+  exit 1
+}
+
+# cmpdir is a recursive routine which does the comparision
+cmpdir() {
+local curdir f dlst w
+
+# I'm not sure of the best way to do this, but we need to check if the target
+# directory is empty and, if so, just return.
+dlst=`ls $1`
+if [ -z "$dlst" ]; then
+  return
+fi
+curdir=`pwd`
+cd $1
+
+for f in *; do
+  w=$1/$f
+  # for symbolic link, we don't care if the target exists, only the link
+  if [ -h $f ]; then
+    if [ ! -h $2/$f ]; then
+      echo "SymLink $f is in directory $1 but not in directory $2"
+      if [ $3 -eq 0 ]; then
+        echo "${w#$dir2/}" >> $del_list
+      else
+        echo "${w#$dir1/}" >> $chg_list
+      fi
+    fi
+    continue
+  fi
+  # for any other file, check that it exists in the 2nd directory
+  if [ ! -e $2/$f ]; then
+    echo "File $f is in directory $1 but not in directory $2"
+    if [ $3 -eq 0 ]; then
+      echo "${w#$dir2/}" >> $del_list
+    else
+      echo "${w#$dir1/}" >> $chg_list
+    fi
+    continue
+  fi
+  # if it's a directory, recurse
+  if [ -d $f ]; then
+    cmpdir $1/$f $2/$f $3
+    continue
+  fi
+  if [ $3 -gt 0 ]; then
+    # if it's a regular file, try a 'diff'
+    if [ -f $f ]; then
+      diff --brief $f $2/$f > /dev/null
+      if [ $? -ne 0 ]; then
+        echo "File $1/$f differs"
+	echo "${w#$dir1/}" >> $chg_list
+      fi
+    fi
+  fi
+  
+done
+cd $curdir
+}
+
+if [ ${#*} -ne 2 ]; then
+  usage
+fi
+if [ ! -d $1 ]; then
+  echo "Cannot find directory '$1'"
+  usage
+fi
+if [ ! -d $2 ]; then
+  echo "Cannot find directory '$2'"
+  usage
+fi
+
+
+del_list="$PWD/del.lst"
+chg_list="$PWD/chg.lst"
+echo "" > $del_list
+echo "" > $chg_list
+
+cd $1
+dir1=`pwd`
+cd $OLDPWD
+cd $2
+dir2=`pwd`
+cd $OLDPWD
+
+cmpdir $dir1 $dir2 1
+cmpdir $dir2 $dir1 0

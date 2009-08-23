@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# This scripts takes 1 or 2 arguments:
+#    Param 1: Name of directory from which to delete files
+#    Param 2: Optional name of file containing list of files to delete
+#	      If not present the scripts looks for 'del.lst' in current dir
+usage() {
+echo "Usage: rmfiles {source directory} [filename]"
+exit 1
+}
+
+# Validate the caller's parameters
+if [ ${#*} -lt 1 ]; then
+  usage
+fi
+if [ ! -d $1 ]; then
+  echo "Cannot find directory '$1'"
+  usage
+fi
+if [ ${#*} -gt 1 ]; then
+  d=$2
+else
+  d=./del.lst
+fi
+if [ ! -f $d ]; then
+  echo "Cannot find file '$d'"
+  usage
+fi
+
+# Read in the list of files to be removed
+a=$(< $d)
+# Iterate through the list
+for f in $a; do
+  # Make sure the requested file is present in source directory
+  if [ ! -e $1/$f ]; then
+    echo "Cant find '$f' in $1"
+  else
+    rm -r $1/$f
+  fi
+done

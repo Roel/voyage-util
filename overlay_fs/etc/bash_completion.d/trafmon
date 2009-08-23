@@ -1,0 +1,33 @@
+_trafmon() 
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts=`ip link show | awk '{if((NR%2) == 1) {interface = $2} else {if( $1 ~ /link\/ether/ ) {{sub(/:/, "", interface)} print interface}}}'`
+    secarray=([0]=src-addr [1]=src-port [2]=dst-addr [3]=dst-port [4]=proto )
+    usearray=([0]=src-addr [1]=src-port [2]=dst-addr [3]=dst-port [4]=proto )
+    if [[ ${COMP_CWORD} -gt 2 ]]; then
+        for i in 0 1 2 3 4
+        do
+            LIMIT=COMP_CWORD
+            for ((j=2; j < LIMIT ; j++)) 
+                do
+                    if [[ ${secarray[$i]} == ${COMP_WORDS[$j]} ]]; then
+                        usearray[$i]=""
+                    fi
+                done
+        done
+        COMPREPLY=( $(compgen -W "${usearray[*]}" -- ${cur}) )
+        return 0
+    fi
+    if [[ ${COMP_CWORD} -gt 1 ]]; then
+        COMPREPLY=( $(compgen -W "${secarray[*]}" -- ${cur}) )
+        return 0
+    fi
+    if [[ ${cur} == * ]] ; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+}
+complete -F _trafmon trafmon

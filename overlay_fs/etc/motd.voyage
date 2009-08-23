@@ -1,0 +1,13 @@
+ __  __
+ \ \/ /___ __  __ ___  ___  ___    Useful Commands:
+  \  // _ \\ \/ /,-_ |/ _ |/ -_)     remountrw - mount disk as read-write
+   \/ \___/ \  / \___,\_  |\___|     remountro - mount disk as read-only
+           _/_/        _'_|          remove.docs - remove all docs and manpages 
+     { V o y a g e } - L i n u x     
+      < http://linux.voyage.hk >   Version: 0.6
+
+Useful Bluetracker commands:
+  Start - /etc/init.d/bluetracker start
+  Start in debug mode - /etc/init.d/bluetracker start debug
+  Stop - /etc/init.d/bluetracker stop
+  Show scanlog - tail -F /var/log/bluetracker/scan.log

@@ -1,0 +1,48 @@
+# This script will *probably* be combined with make-kernel, but for
+# the moment is set up for testing standalone.
+#
+# Note that 'mkinitrd' on Debian is quite different than 'mkinitrd' on
+# Redhat.  The following assumes a Debian system is being used.
+
+#   **** For testing only ****
+#kname=2.6.15.7-ubuntu1-486-voyage
+kname=2.6.15-486-voyage
+
+SRC=/usr/projects/voyage/voyage-kernel/kernel-source-2.6.15-voyage
+TGT=/home/bill/voyage/voyage-current
+
+# We first create our own mkinitrd configuration directory, then put
+# in the files we want to have present.
+confdir=`mktemp -d`
+echo "Creating files in $confdir"
+
+cat > $confdir/mkinitrd.conf <<EOF
+MODULES=most
+DELAY=0
+ROOT=probe
+UMASK=022
+MKIMAGE='mkcramfs %s %s > /dev/null'
+BUSYBOX=no
+PKGSCRIPTS=no
+INITRD_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+EOF
+
+cat > $confdir/modules <<EOF
+usbcore
+ohci-hcd
+uhci-hcd
+ehci-hcd
+usb-storage
+scsi_mod
+scx200
+EOF
+
+#
+# In order to use the mkinitrd program, we need to have the Voyage modules
+# accessible under /lib/modules.  We will do this by installing a symbolic
+# link, running the script, and then removing the link.
+ln -sf $TGT/lib/modules/$kname /lib/modules
+
+rm -rf $confdir
+rm -f /lib/modules/$kname
+

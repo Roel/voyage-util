@@ -1,0 +1,20 @@
+# Defaults for voyage-util initscript
+# sourced by /etc/init.d/voyage-util
+# installed at /etc/default/voyage-util by the maintainer scripts
+
+#
+# This is a POSIX shell fragment
+#
+
+# Additional options that are passed to the Daemon.
+DAEMON_OPTS=""
+
+# set it to YES to enable LEDS for WRAP/ALIX, NO to disable
+VOYAGE_LEDS="YES"
+
+# apart from /var/tmp and /var/log, add extra directories to sync from tmpfs
+VOYAGE_SYNC_DIRS=""
+
+# set unionfs type, support unionfs or aufs only.
+#VOYAGE_UNIONFS=unionfs
+

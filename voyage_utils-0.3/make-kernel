@@ -1,0 +1,177 @@
+#!/bin/bash
+#
+#	The routines within this file are designed for use with the
+#	Voyage Linux Distribution, and may be freely copied under the
+#	terms given in file 'License'.
+#
+#	Copyright (C) 2006 William Brack <wbrack@mmm.com.hk>
+#
+#
+
+#
+#	Params:
+#		--source		kernel source directory
+#		--append-to-version	string appended to version
+#		--target		voyage target directory
+#
+
+function show_help() {
+  cat >&2 << EOF
+Usage: $SCRIPTNAME {--source x} {--target y} [--append-to-version z]
+    where the parameters are:
+      --source              kernel source directory
+      --target              voyage target directory
+      --append-to-version   optional string to append to kernel version
+EOF
+  exit 1
+}
+
+#
+#	First we validate and process the script params
+#
+SCRIPTNAME=${0##*/}
+
+ARGS=`getopt -u -n $SCRIPTNAME -o s:t: -l source:,target:,append-to-version: -- "$@"`
+if [ $? -ne 0 ]; then
+  show_help
+fi
+
+# Reset the positional parameters
+set -- $ARGS
+
+#
+#	Now go through the supplied params and look for what
+#	we want
+#
+SRC=""
+TGT=""
+ATV=""
+while [ true ]; do
+  if [ "$1" == "--" ]; then
+    break
+  fi
+  # positional params index from 1
+  # check that each param is followed by an argument
+  if [ "${2:1:1}" == "-" ] || [ "${2}" == "" ]; then
+    echo "*** Missing argument to $1" >&2
+    show_help
+  fi
+  
+  case "$1" in
+    -s|--source)
+      SRC=$2 ;;
+    -t|--target)
+      TGT=$2 ;;
+    -a|--append-to-version)
+      ATV=$2 ;;
+    *)
+      echo "***Illegal option: $1" >&2; show_help;;
+  esac
+  shift
+  shift
+done
+#
+# Make sure we got the ones we need
+#
+if [ "$SRC" == "" ]; then
+  echo "*** Missing --source parameter ***" >&2
+  show_help
+fi
+if [ "$TGT" == "" ]; then
+  echo "*** Missing --target parameter ***" >&2
+  show_help
+fi
+#
+# Check that source and target are valid directories
+#
+if [ ! -d $TGT ]; then
+  echo "$TGT is not a directory.  Correct and restart." >&2
+  exit 1
+fi
+if [ ! -d $SRC ]; then
+  echo "$SRC is not a directory.  Correct and restart." >&2
+  exit 1
+fi
+
+if [ ! -d $TGT/boot ]; then
+  echo "$TGT is not a valid Voyage target directory" >&2
+  exit 1
+fi
+if [ ! -f $SRC/Makefile ]; then
+  echo "$SRC is not a valid kernel source directory" >&2
+  exit 1
+fi
+if [ ! -f $SRC/.config ]; then
+  echo "The kernel source in $SRC has not been configured - correct and restart" >&2
+  exit 1
+fi
+# Save our current directory
+dir=$PWD
+# Assure directories have absolute pathnames
+cd $TGT
+TGT=$PWD
+cd $dir
+cd $SRC
+SRC=$PWD
+#
+# Now we are ready to start to work.  First we go to the source
+# directory and get information about the kernel we are about to
+# generate
+#
+v=`head -n4 Makefile | sed -e "s/ *= */=/"`
+export $v
+if [ "$VERSION" == "" ] | [ "$PATCHLEVEL" == "" ] | [ "$SUBLEVEL" == "" ]; then
+  echo "Logic error in $SCRIPTNAME - please report to the author" >&2
+  exit 1
+fi
+
+if [ ! "$ATV" == "" ]; then
+  cmd="make LOCALVERSION=$ATV"
+else
+  cmd=make
+fi
+
+cat >&2 <<EOM
+
+
+###################################################################
+# I'm now going to 'make' the kernel image.  Depending upon the   #
+# speed of your processor, this might take quite awhile.  Please  #
+# take a break, have a drink of your favourite beverage, and wait #
+# ..............                                                  #
+###################################################################
+
+EOM
+
+$cmd
+if [ $? -ne 0 ]; then
+  echo "****Error during 'make' of the kernel - exiting!****" >&2
+  exit 1
+fi
+
+cat >&2 << EOM
+The kernel 'make' has completed successfully.  Next we will install the
+kernel modules directly into the Voyage target directory.
+EOM
+
+$cmd INSTALL_MOD_PATH=$TGT modules_install
+if [ $? -ne 0 ]; then
+  echo "****Error during 'make modules_install' - exiting!***" >&2
+  exit 1
+fi
+
+# Good progress - now copy the new kernel image and map into $TGT/boot
+kname="$VERSION.$PATCHLEVEL.$SUBLEVEL$EXTRAVERSION$ATV"
+cp -p arch/i386/boot/bzImage $TGT/boot/vmlinuz-$kname
+cp -p System.map $TGT/boot/System.map$kname
+
+# All done except for the initrd image (which is going to be messy!!!)
+
+cd $dir
+
+# Note that 'mkinitrd' on Debian is quite different than 'mkinitrd' on
+# Redhat.  The following assumes a Debian system is being used.
+
+# We first create our own mkinitrd configuration directory, then put
+# in the files we want to have present.
+confdir=`mktemp -d`

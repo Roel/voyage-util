@@ -1,0 +1,18 @@
+We need to go through places where we set environment variables for the
+config lists and decide whether they should be unset under some condition.
+For example, if VOYAGE_SYSTEM_CONSOLE is changed from 'serial' to 'console',
+perhaps we should delete VOYAGE_SYSTEM_SERIAL.
+
+If the user tries to run the scripts under a login other than root, there
+are a lot of potential problems with permissions.  Either we need to assure
+that only 'root' runs the scripts, or else we need to add quite a bit of
+code at various places (e.g. mounts and umounts, copies, deletes) to check
+(and, if necessary, change [with sudo]) the existing permissions.  For now,
+we will take the easy route and assure only root can run :-).
+
+We need to decide what to do in order to resolve differences between the
+"distribution" /etc/voyage.conf and changes made by the user during the
+running of the installation scripts.  The current scripts save any changes
+which have been made into .voyage-install.conf
+Note that the current logic (in voyage-install.sh) is to override the
+distribution etc/voyage.conf settings with those from .voyage-install.conf.
