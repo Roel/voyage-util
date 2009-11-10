@@ -1,3 +1,10 @@
+voyage-util (1:0.6-3ugent14) unstable; urgency=low
+
+  * Added epoch to bump version numbering in order to sort after
+  upstream's 0.7 release.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Tue, 10 Nov 2009 19:05:31 +0100
+
 voyage-util (0.6-3ugent14) unstable; urgency=low
 
   * Updated overlay_fs/usr/local/sbin/bluetracker-usb.sh
