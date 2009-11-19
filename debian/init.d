@@ -62,6 +62,8 @@ case $1 in
 				ssh-keygen -q -t rsa -f /etc/ssh/ssh_host_rsa_key -N '' || { echo "Fatal Error: Failed to generate RSA keypair" >&2; exit; }
 				rm -f /etc/ssh/ssh_host_dsa_key
 				ssh-keygen -q -t dsa -f /etc/ssh/ssh_host_dsa_key -N '' || { echo "Fatal Error: Failed to generate DSA keypair" >&2; exit; }
+
+				/usr/sbin/adjtimexconfig
 				
 				depmod -ae
 				

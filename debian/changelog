@@ -1,3 +1,12 @@
+voyage-util (1:0.6-3ugent16) unstable; urgency=low
+
+  * Load module for alix2 led's.
+  * Configure adjtimex on first boot.
+  * debian/control:
+        - depend on adjtimex
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Thu, 19 Nov 2009 22:21:00 +0100
+
 voyage-util (1:0.6-3ugent15) unstable; urgency=low
 
   * Renamed various scripts from 'Bluetracker' to 'Gyrid' form.
