@@ -3,7 +3,7 @@
 """
 This script checks if the BlueZ DBus interface is accessible. If it isn't,
 either BlueZ (or DBus) is not running or crashed. In that case: restart
-dbus (+ bluetoothd) and bluetracker.
+dbus (+ bluetoothd) and Gyrid.
 """
 
 import dbus
@@ -35,5 +35,4 @@ try:
 except:
     #BlueZ (or DBus) not running/crashed.
     popen(["/etc/init.d/dbus", "restart"]) #Will indirectly restart bluetoothd.
-    popen(["/etc/init.d/bluetracker", "restart"])
-    
+    popen(["/etc/init.d/gyrid", "restart"])

@@ -1,10 +1,10 @@
 # Default Bluetracker cron file.
 
 # Backup to permanent USB drive every 20 minutes (at *:10 *:30 and *:50)
-10,30,50 * * * * root /usr/local/sbin/bluetracker-usb.sh cron &> /dev/null
+10,30,50 * * * * root /usr/local/sbin/gyrid-usb.sh cron &> /dev/null
 
 # Call the clean script to free space hourly at *:15
-15 * * * * root /usr/local/sbin/bluetracker-clean.sh &> /dev/null
+15 * * * * root /usr/local/sbin/gyrid-clean.sh &> /dev/null
 
 # Call the restart script every minute (only restart if necessary)
-* * * * * root /usr/local/sbin/bluetracker-restart.py &> /dev/null
+* * * * * root /usr/local/sbin/gyrid-restart.py &> /dev/null

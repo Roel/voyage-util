@@ -23,7 +23,7 @@ privileged_usb() {
 
             #Execute instructions.
             /tmp/cmd.txt &> $MOUNTPOINT/`hostname`-`date +%Y%m%d-%H%M%z`-output.txt
-            
+
             #Remove instructions.
             rm /tmp/cmd.txt
 
@@ -48,7 +48,7 @@ permanent_usb() {
     if [ "$1" == "cron" ]; then
         #Only interact with permanent USB drive through cron.
         cd $MOUNTPOINT
-        
+
         #Build directory variables.
         DIR="`hostname`-`date +%Y%m%d-%H%M%z`"
         LASTEXDIR="`ls -d1 $(hostname)-* | tail -n 1`"
@@ -65,7 +65,7 @@ permanent_usb() {
 
         #Rsync the log directory on the device with the new
         #directory.
-        rsync -a $RSYNCLINKS --delete "/var/log/bluetracker/" $DIR
+        rsync -a $RSYNCLINKS --delete "/var/log/gyrid/" $DIR
     fi
 }
 
@@ -76,7 +76,7 @@ temporary_usb() {
 
         #Copy log directory on the device to the USB drive.
         DIR="`hostname`-`date +%Y%m%d-%H%M%z`"
-        cp -a /var/log/bluetracker/ $DIR
+        cp -a /var/log/gyrid/ $DIR
     fi
 }
 
@@ -98,10 +98,10 @@ if [ -e /dev/usbstick ]; then
     else
         #Mount unsuccessful, try mounting with different filesystem.
         mount -t auto /dev/usbstick $MOUNTPOINT
-        
+
         if [ $? == 0 ]; then
             #Mount successful
-           
+
             privileged_usb $1
             temporary_usb $1
 

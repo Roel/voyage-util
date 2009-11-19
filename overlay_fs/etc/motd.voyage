@@ -6,8 +6,8 @@
      { V o y a g e } - L i n u x     
       < http://linux.voyage.hk >   Version: 0.6
 
-Useful Bluetracker commands:
-  Start - /etc/init.d/bluetracker start
-  Start in debug mode - /etc/init.d/bluetracker start debug
-  Stop - /etc/init.d/bluetracker stop
-  Show scanlog - tail -F /var/log/bluetracker/scan.log
+Useful Gyrid commands:
+  Start - /etc/init.d/gyrid start
+  Start in debug mode - /etc/init.d/gyrid start debug
+  Stop - /etc/init.d/gyrid stop
+  Show scanlog - tail -F /var/log/gyrid/serial/scan.log
