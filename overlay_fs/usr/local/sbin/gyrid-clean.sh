@@ -20,7 +20,7 @@
 #
 #if [ $FREEBYTES -lt 50000 ]; then
 #    while true; do
-#        rm `ls -1 /var/log/bluetracker/scan.log.*`
+#        rm `ls -1 /var/log/gyrid/serial/scan.log.*`
 #        get_free_bytes
 #        if [ $FREEBYTES -gt 500000 ]; then
 #            exit 0

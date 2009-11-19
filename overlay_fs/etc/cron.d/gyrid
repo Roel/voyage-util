@@ -1,4 +1,4 @@
-# Default Bluetracker cron file.
+# Default Gyrid cron file.
 
 # Backup to permanent USB drive every 20 minutes (at *:10 *:30 and *:50)
 10,30,50 * * * * root /usr/local/sbin/gyrid-usb.sh cron &> /dev/null
