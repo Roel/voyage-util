@@ -152,7 +152,7 @@ select_target_console() {
 	else
 		VOYAGE_SYSTEM_CONSOLE_DEFAULT=1
 	fi
-	local a opts="Serial Terminal%Console Interface"
+	local a opts="1:Serial Terminal:%2:Console Interface:"
 	ask_setting "Select terminal type:" "$opts" $VOYAGE_SYSTEM_CONSOLE_DEFAULT
 	case $v in
 		1) VOYAGE_SYSTEM_CONSOLE="serial";;
@@ -166,6 +166,30 @@ select_target_console() {
 	fi
 	save_config_var VOYAGE_SYSTEM_CONSOLE VOYAGE_CONF_LIST
 	save_config_var VOYAGE_SYSTEM_CONSOLE CONFIGLIST
+}
+
+#
+#	Function select_fs_creation()
+#	Selects if we do partitioning create the file system
+#	Sets the environment MAKEFS
+#	with the result
+#
+select_fs_creation () {
+	local MAKEFS_DEFAULT
+	MAKEFS_DEFAULT="$MAKEFS"
+	if [ "$MAKEFS" = "" ]; then 
+		MAKEFS_DEFAULT=1
+	fi
+
+	local a opts="1:Partition Flash Media and Create Filesystem%2:Use Flash Media as-is"
+	ask_setting "What shall I do with your Flash Media?" "$opts" "$MAKEFS_DEFAULT"
+	case $v in
+		1) MAKEFS=1;;
+		2) MAKEFS=2;;
+		*) err_quit "Unrecognized response from ask_setting";;
+	esac
+	save_config_var MAKEFS VOYAGE_CONF_LIST
+	save_config_var MAKEFS CONFIGLIST
 }
 
 #
@@ -208,6 +232,11 @@ Distribution directory:   $DISTDIR
 Disk/Flash Device:        $TARGET_DISK
 Installation Partition:   $TARGET_DISK$TARGET_PART
 EOM
+	if [ $MAKEFS == 1 ]; then
+		cat >&2 <<EOM
+Create Partition and FS:  yes
+EOM
+	fi
 
 	if [ $SYSTEM_BOOTSTRAP == "grub" ]; then
 		cat >&2 <<EOM
@@ -236,17 +265,21 @@ Bootstrap partition:      $TARGET_DISK$BOOTSTRAP_PART
 EOM
 	fi
 
-	read_response "\nOK to continue (y/n)? " a
-	if [ "$a" == "Y" ]; then
-		a="y"
-	fi
-	if [ "$a" != "y" ]; then
-		return
+	if [ "$1" != "run" ]; then 
+		read_response "\nOK to continue (y/n)? " a
+		if [ "$a" == "Y" ]; then
+			a="y"
+		fi
+		if [ "$a" != "y" ]; then
+			return
+		fi
 	fi
 
 	echo "Ready to go ...." >&2
+	[ "$MAKEFS" = 1 ] && ${EXECDIR}/format-cf.sh -t $TARGET_DISK -b $BOOTSTRAP_PART -y
 	${EXECDIR}/copyfiles.sh
 }
+
 
 ############################################
 #                                          #
@@ -275,28 +308,136 @@ TARGET_PART=1
 TARGET_MOUNT=/mnt/cf
 BOOTSTRAP_PART=1
 SYSTEM_BOOTSTRAP=grub
+SYSTEM_HOSTNAME=voyage
+MAKEFS=""
 
 VOYAGE_SYSTEM_SERIAL=38400
 VOYAGE_SYSTEM_CONSOLE=serial
 
-# The logic here is a little confusing.  Basically, we may or may
-# not have a stored $CONFIGFILE [.voyage-install.conf] which
-# contains data saved from previous invocations.  If we do have it,
-# we need to read it to find out where to look for the distribution
-# directory.  After that we will read in 'voyage.conf' from the
-# distribution.  However, if on previous invocations the user has
-# changed some of the profile settings, those changed settings will
-# be lost.  To solve this, we will re-read the stored config after
-# reading the distribution profile.
+run_dialog=1
+
+usage () {
+	cat << EOF
+usage: $0 [options]
+		-i  install voyage linux  default=ask
+		-u  update  voyage linux  default=ask
+		-P  VOYAGE_PROFILE        default=$VOYAGE_PROFILE
+		-t  TARGET_DISK           default=$TARGET_DISK
+		-p  TARGET_PART           default=$TARGET_PART
+		-m  TARGET_MOUNT          default=$TARGET_MOUNT
+		-b  BOOTSTRAP_PART        default=$BOOTSTRAP_PART
+		-g  SYSTEM_BOOTSTRAP=grub default=$SYSTEM_BOOTSTRAP
+		-l  SYSTEM_BOOTSTRAP=lilo default=$SYSTEM_BOOTSTRAP
+		-s  VOYAGE_SYSTEM_SERIAL  default=$VOYAGE_SYSTEM_SERIAL
+		-c  VOYAGE_SYSTEM_CONSOLE default=$VOYAGE_SYSTEM_CONSOLE
+		-h  SYSTEM_HOSTNAME       default=$SYSTEM_HOSTNAME
+		-d  DISTDIR               default=$DISTDIR
+		-f  partition and mkfs    default=ask
+		-U  use flash media as-is default=ask
+EOF
+}
+
+doopt () {
+	# Variable usage:
+	# x       actual command line element being evaluated
+	# BITMAP  a bit vector to collect if all parameters are set
+	# CLA_*   variables corresponding to teh configuration variables
+	# 
+	# output: $run_dialog $CLA_*
+
+	local x
+	local BITMAP
+	BITMAP=0
+	while [ $# -gt 0 ]; do
+		x="$1"; shift
+	
+		case "$x" in
+		-P) CLA_VOYAGE_PROFILE="$1"
+			BITMAP=$[ $BITMAP | 1 ]
+		    shift
+			;;
+		-t) CLA_TARGET_DISK="$1"
+			BITMAP=$[ $BITMAP | 2 ]
+		    shift
+			;;
+		-p) CLA_TARGET_PART="$1"
+			BITMAP=$[ $BITMAP | 4 ]
+		    shift
+			;;
+		-m) CLA_TARGET_MOUNT="$1"
+			BITMAP=$[ $BITMAP | 8 ]
+		    shift
+			;;
+		-b) CLA_BOOTSTRAP_PART="$1"
+			BITMAP=$[ $BITMAP | 16 ]
+		    shift
+			;;
+		-g) CLA_SYSTEM_BOOTSTRAP="grub"
+			BITMAP=$[ $BITMAP | 32 ]
+			;;
+		-l) CLA_SYSTEM_BOOTSTRAP="lilo"
+			BITMAP=$[ $BITMAP | 32 ]
+			;;
+		-s) CLA_VOYAGE_SYSTEM_SERIAL="$1"
+			BITMAP=$[ $BITMAP | 64 ]
+		    shift
+			;;
+		-c) CLA_VOYAGE_SYSTEM_CONSOLE="$1"
+			BITMAP=$[ $BITMAP | 128 ]
+		    shift
+			;;
+		-h) CLA_SYSTEM_HOSTNAME="$1"
+			BITMAP=$[ $BITMAP | 256 ]
+		    shift
+			;;
+		-d) CLA_DISTDIR="$1"
+			BITMAP=$[ $BITMAP | 512 ]
+		    shift
+			;;
+		-f) CLA_MAKEFS="1"
+			BITMAP=$[ $BITMAP | 1024 ]
+			;;
+		-U) CLA_MAKEFS="2"
+			BITMAP=$[ $BITMAP | 1024 ]
+			;;
+		*)  usage
+			exit 1
+			;;
+		esac
+	done
+	if [ $BITMAP != 2047 ]; then
+		echo "some mandatory options are unset, please enter them interactively"
+		run_dialog=1
+	else 
+		run_dialog=0
+	fi
+}
+
+doopt "$@"
+
+# The logic here is a little confusing. First, we may or may not have
+# a stored $CONFIGFILE [.voyage-install.conf] # which contains data
+# saved from previous invocations.  If we do have it, we need to read
+# it just to find out where to look for the distribution directory
+# -- except for $CLA_DISTDIR being set by the command line option "-d"
+# which would override any setting of $DISTDIR.  After that we will
+# read in 'voyage.conf' from the distribution.  However, if on previous
+# invocations the user has changed some of the profile settings, those
+# changed settings will be lost.  To solve this, we will re-read the
+# stored config after reading the distribution profile.
 read_config "$CONFIGFILE" CONFIGLIST
 
-# Set the defaults in case there are no saved values
-if [ -z $DISTDIR ]; then
-	ask_work_dir "$RUNDIR" "distribution"
-	DISTDIR=$w
-	save_config_var DISTDIR CONFIGLIST
-#	export DISTDIR
+if [ ! -z "$CLA_DISTDIR" ]; then
+	DISTDIR="$CLA_DISTDIR"
+else
+	# Set the defaults in case there are no saved values
+	if [ -z "$DISTDIR" ]; then
+		ask_work_dir "$RUNDIR" "distribution"
+		DISTDIR=$w
+		save_config_var DISTDIR CONFIGLIST
+	fi
 fi
+#	export DISTDIR
 
 # Initialise the configuration from voyage.conf
 if [ ! -f ${DISTDIR}/etc/voyage.conf ]; then
@@ -315,36 +456,60 @@ fi
 # assure the profile is saved in the user's saved defaults
 save_config_var VOYAGE_PROFILE CONFIGLIST
 
-# here we define the different choices which can be made by the user
-OPTIONS="Specify Distribution Directory%Select Target Profile%Select Target Disk%Select Target Bootstrap Loader%Configure Target Console%Copy Distribution to Target%Update hostname%Exit"
-opt=1
-while true
-do
-    opt=$((opt + 1))
-    if [ $opt -ge 8 ] ; then opt=8 ; fi
-    
-    # Work starts here.  The default is set to "2" at first
-    #ask_setting "What would you like to do?" "$OPTIONS" 7
-    ask_setting "What would you like to do?" "$OPTIONS" $opt
-    opt=$v
-	case $v in
-		1) ask_work_dir $DISTDIR "distribution";
-		   DISTDIR=$w;;
-		2) select-profile $DISTDIR;
-		   if [ -z $w ]; then
-		   	err_msg "Check Distribution Directory setting!\n\n";
-		   fi;;
-		3) select_target_disk;;
-		4) select_target_boot;;
-		5) select_target_console;;
-		6) confirm_copy_details;;
-        7) update_hostname;;
-		8) break;;
-		*) err_quit "Invalid return code from ask_setting";;
-	esac
-done
+# command line parameters are not supposed to overwrite the config 
+# file on disk. so they go here
+[ ! -z "$CLA_VOYAGE_PROFILE"        ] && VOYAGE_PROFILE="$CLA_VOYAGE_PROFILE"               
+[ ! -z "$CLA_TARGET_DISK"           ] && TARGET_DISK="$CLA_TARGET_DISK"                      
+[ ! -z "$CLA_TARGET_PART"           ] && TARGET_PART="$CLA_TARGET_PART"                      
+[ ! -z "$CLA_TARGET_MOUNT"          ] && TARGET_MOUNT="$CLA_TARGET_MOUNT"                      
+[ ! -z "$CLA_BOOTSTRAP_PART"        ] && BOOTSTRAP_PART="$CLA_BOOTSTRAP_PART"                      
+[ ! -z "$CLA_SYSTEM_BOOTSTRAP"      ] && SYSTEM_BOOTSTRAP="$CLA_SYSTEM_BOOTSTRAP"
+[ ! -z "$CLA_SYSTEM_HOSTNAME"       ] && SYSTEM_HOSTNAME="$CLA_SYSTEM_HOSTNAME"
+[ ! -z "$CLA_VOYAGE_SYSTEM_SERIAL"  ] && VOYAGE_SYSTEM_SERIAL="$CLA_VOYAGE_SYSTEM_SERIAL"                      
+[ ! -z "$CLA_VOYAGE_SYSTEM_CONSOLE" ] && VOYAGE_SYSTEM_CONSOLE="$CLA_VOYAGE_SYSTEM_CONSOLE"                      
+[ ! -z "$CLA_DISTDIR"               ] && DISTDIR="$CLA_DISTDIR"                             
+[ ! -z "$CLA_MAKEFS"                ] && MAKEFS="$CLA_MAKEFS"                             
 
-write_config $CONFIGFILE "$CONFIGLIST"
+if [ "$run_dialog" = 1 ]; then 
 
-# Just for testing we write out the results to a local file
-write_config "test.conf" "$VOYAGE_CONF_LIST"
+	# here we define the different choices which can be made by the user
+	# OPTIONS-Format: option "%" option "%" option
+	# option-Format:  number ":" description ":" preset (here: by command line)
+	OPTIONS="1:Specify Distribution Directory:$CLA_DISTDIR%2:Select Target Profile:$CLA_VOYAGE_PROFILE%3:Select Target Disk:$CLA_TARGET_DISK%4:Select Target Bootstrap Loader:$CLA_SYSTEM_BOOTSTRAP%5:Configure Target Console:$CLA_VOYAGE_SYSTEM_CONSOLE%6:Partition and Create Filesystem:$CLA_MAKEFS%7:Copy Distribution to Target:1%8:Set hostname:%CLA_SYSTEM_HOSTNAME%9:Exit:1"
+	
+	opt=1
+	while true
+	do
+	    opt=$((opt + 1))
+	    if [ $opt -ge 8 ] ; then opt=8 ; fi
+	    
+	    # Work starts here.  The default is set to "2" at first
+	    #ask_setting "What would you like to do?" "$OPTIONS" 8
+	    ask_setting "What would you like to do?" "$OPTIONS" $opt
+	    opt=$v
+		case $v in
+			1) ask_work_dir $DISTDIR "distribution";
+			   DISTDIR=$w;;
+			2) select-profile $DISTDIR;
+			   if [ -z $w ]; then
+			   	err_msg "Check Distribution Directory setting!\n\n";
+			   fi;;
+			3) select_target_disk;;
+			4) select_target_boot;;
+			5) select_target_console;;
+			6) select_fs_creation;;
+			7) confirm_copy_details;;
+			8) update_hostname;;
+			9) break;;
+			*) err_quit "Invalid return code from ask_setting";;
+		esac
+	done
+	
+	write_config $CONFIGFILE "$CONFIGLIST"
+
+	# Just for testing we write out the results to a local file
+	write_config "test.conf" "$VOYAGE_CONF_LIST"
+else 
+	confirm_copy_details run
+fi
+

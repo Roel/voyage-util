@@ -1,3 +1,23 @@
+voyage-util (0.7-1) unstable; urgency=low
+
+  * new upstream release
+  * better debhelper support for initscripts
+  * reconfigure resolvconf at installation
+  * fix profile and serial menu items without numbers
+  * add new voyage-rwfile script to support /ro /rw style read-only mode
+  * [voyage-sync] add empty directory checking 
+  * [voyage-sync] fix .* hidden files not sync'ing
+  * [voyage-sync] add VOYAGE_RW_DIRS for non-sync read-write directories
+  * [voyage-sync] run sync command after finish synchronization to disk 
+  * [voyage-sync] corrected some typos and preserve ownership and permissions on copied directories to ramdisk. Killing running processes got also some changes. (Hermann Hofer)
+  * [voyage-sync] detect a reboot with data remaining in '/.sync/...' from a previously sync and copy this data over to the correct place before syncing and mounting to ramdisk. (Hermann Hofer)
+  * PATCH[3/3]: command line processing for voyage.update (Christian Recktenwald)
+  * PATCH: command line processing for format-cf.sh (Christian Recktenwald)
+  * PATCH: prevent /sys /proc /dev and /tmp/cf from	being copied by	copyfiles.sh / alternate network installation procedure (Christian Recktenwald)
+  * PATCH: Add -U flag to use flash media as-is (Darshaka Pathirana)
+
+ -- Punky Tse <punkytse@punknix.com>  Fri, 10 Jul 2009 23:29:14 +0800
+
 voyage-util (1:0.6-3ugent16) unstable; urgency=low
 
   * Load module for alix2 led's.

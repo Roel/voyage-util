@@ -20,12 +20,21 @@ source $EXECDIR/script-utils.sh
 # select-profile is a separate script but usually needed
 source $EXECDIR/select-profile.sh
 
-# now ask what the user wants to do
-OPTIONS="Create new Voyage Linux disk%Update existing Voyage configuration%Exit"
-ask_setting "What would you like to do?" "$OPTIONS" 1
+case "$1" in
+	-i) v=1
+		shift
+		;;
+	-u) v=2
+		shift
+		;;
+	*) # now ask what the user wants to do
+		OPTIONS="1:Create new Voyage Linux disk:%2:Update existing Voyage configuration:%3:Exit:"
+		ask_setting "What would you like to do?" "$OPTIONS" 1
+		;;
+esac
 
 case $v in
-	1) $EXECDIR/voyage-install.sh;;
+	1) $EXECDIR/voyage-install.sh "$@";;
 	2) $EXECDIR/voyage-update.sh;;
 	*) err_quit "No action taken";;
 esac

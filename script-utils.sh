@@ -255,6 +255,30 @@ list_str()
 }
 
 #
+#	Function split_ask_setting_option ()
+#	Params: $1  option consisting of  number ":" description ":" command line argument
+#	Returns: $saso_nr $saso_desc $saso_cla
+#
+split_ask_setting_option () {
+	local saveifs
+	saveifs="$IFS"
+	IFS=':'
+	set -- $1
+
+	saso_nr="$1" 
+	saso_desc="$2"
+	saso_cla="$3"
+	
+	# the list may not be ":" separated.  If so, saso_nr is left blank and
+	# fill with saso_desc instead.
+	if [ -z "$saso_desc" ] ; then 
+		saso_desc="$saso_nr"
+		saso_nr=""
+	fi
+
+	IFS="$saveifs"
+}
+#
 #	Function ask_setting()
 #	Params: $1=Question string, $2=Value list, $3=default
 #	Returns: $v set to postion in list (starting from 1)
@@ -270,13 +294,17 @@ ask_setting()
 		len=0
 		# Calculate the length of the list, and find the default
 		for ix in $2; do
+			split_ask_setting_option $ix
 			len=$(($len + 1))
 			if [ "$3" -eq "$len" ]; then
-				default=$ix
+				default="$saso_desc"
 			fi
-			echo "  $len - $ix" >&2
+			if [ -z "$saso_cla" ]; then
+				if [ -z "$saso_nr" ]; then saso_nr="$len"; fi
+				echo "  $saso_nr - $saso_desc" >&2
+			fi
 		done
-		read_response "       (default=$3 [$default]): " v
+		read_response "      (default=$3 [$default]): " v
 		v=${v:-$3}
 		if [ $v -ge 1 ]; then
 			if [ $v -le $len ]; then

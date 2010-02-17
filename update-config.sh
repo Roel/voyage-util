@@ -77,3 +77,18 @@ remove_dnsmasq_pxe() {
     echo "Removing dnsmasq.pxe.conf in /etc/dnsmasq.more.conf" >&2    
   fi
 }
+
+#
+#	Function reconfig_resolvconf()
+#	reconfigure resolvconf package
+#	Params:	$1 - root directory of target
+#
+reconfig_resolvconf() {
+    PKG=$(cat $1/voyage.dpkg.list |grep resolvconf)
+    if  [ ! -z "$PKG" ] ; then
+        echo "Reconfiguring resolvconf"
+        chroot $1 sh -c "DEBIAN_FRONTEND=noninteractive dpkg-reconfigure resolvconf"
+    fi
+
+}
+

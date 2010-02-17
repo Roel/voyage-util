@@ -1,4 +1,14 @@
 #! /bin/sh
+### BEGIN INIT INFO
+# Provides:          voyage-util
+# Required-Start:    $all
+# Required-Stop:     
+# Should-Start:      
+# Should-Stop:       
+# Default-Start:     2 3 4 5 
+# Default-Stop:      
+# Short-Description: Voyage Init script
+### END INIT INFO
 #
 # skeleton  example file to build /etc/init.d/ scripts.
 #       This file should be used to construct scripts for /etc/init.d.
@@ -24,7 +34,7 @@ fi
 
 start_leds()
 {
-	if [ $VOYAGE_LEDS == "NO" ] ; then return ; fi
+	if [ $VOYAGE_LEDS = "NO" ] ; then return ; fi
 	
 	if [ ! -f /etc/voyage.conf ] ; then return ; fi
 	. /etc/voyage.conf
@@ -95,6 +105,12 @@ case $1 in
 		#fi
 
 		# Do nothing
+		;;
+	force-reload|restart)
+
+    	;;
+	status)
+	
 		;;
 	*)
 	    ;;

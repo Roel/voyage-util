@@ -65,10 +65,17 @@ e2label $TARGET_DISK$TARGET_PART ROOT_FS
 # any files which we don't want to copy.  First, we check if there is a
 # file 'exclude-files' (which can contain a list of regular-expressions
 # describing files)
+if [ "$DISTDIR" = "/" ]; then 
+	DISTDIRPREFIX="";
+else 
+	DISTDIRPREFIX="$DISTDIR";
+fi
+
+exclude="--exclude /tmp/cf --exclude '$DISTDIRPREFIX/sys/*' --exclude '$DISTDIRPREFIX/dev/*' --exclude '$DISTDIRPREFIX/proc/*'"
 if [ -f $EXECDIR/exclude-files ]; then
-	excl="--exclude-from=$EXECDIR/exclude-files"
+	excl="$exclude --exclude-from=$EXECDIR/exclude-files"
 else
-	excl=""
+	excl="$exclude"
 fi
 
 # Here we can generate a list (based upon the specified profile) of any
@@ -78,7 +85,7 @@ fi
 # Ready to do the copy - it might take awhile, so output a message to let
 # the user know what we are doing
 echo -ne "Copying files .... " >&2
-rsync -aHx --delete $excl $DISTDIR/* $TARGET_MOUNT || \
+eval rsync -aHx --delete $excl $DISTDIRPREFIX/* $TARGET_MOUNT || \
   err_quit "Failed to copy files!"
 echo -e "done\n" >&2
 
@@ -86,6 +93,7 @@ update_modules "$TARGET_MOUNT"
 update_inittab "$DISTDIR" "$TARGET_MOUNT"
 update_pcmcia "$TARGET_MOUNT"
 remove_dnsmasq_pxe "$TARGET_MOUNT"
+reconfig_resolvconf "$TARGET_MOUNT"
 ${EXECDIR}/setboot.sh
 write_config "$TARGET_MOUNT/etc/voyage.conf" "$VOYAGE_CONF_LIST"
 #umount $TARGET_MOUNT
