@@ -1,3 +1,9 @@
+voyage-util (1:0.7-1ugent2.1) unstable; urgency=low
+
+  * Correct spelling mistake in MOTD.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Mon, 22 Feb 2010 17:57:29 +0100
+
 voyage-util (1:0.7-1ugent2) unstable; urgency=low
 
   * Modified MOTD to show our version-numbering and
