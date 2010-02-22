@@ -1,10 +1,16 @@
- __  __
- \ \/ /___ __  __ ___  ___  ___    Useful Commands:
-  \  // _ \\ \/ /,-_ |/ _ |/ -_)     remountrw - mount disk as read-write
-   \/ \___/ \  / \___,\_  |\___|     remountro - mount disk as read-only
-           _/_/        _'_|          remove.docs - remove all docs and manpages 
-     { V o y a g e } - L i n u x     
-      < http://linux.voyage.hk >   Version: 0.6
+ __      __
+ \ \    / /
+  \ \  / /___  _   _  __ _  __ _  ___       Builded upon Voyage,
+   \ \/ // _ \| | | |/ _` |/ _` |/ _ \      a Debian GNU/Linux
+    \  /| (_) | |_| | (_| | (_| |  __/      derivative for ALIX.
+     \/  \___/ \__, |\__,_|\__, |\___|      http://linux.voyage.hk
+                __/ |       __/ |
+               |___/       |___/   _  _____            _
+                             | |  | |/ ____|          | |
+                             | |  | | |  __  ___ _ __ | |_
+   Version: %versio          | |  | | | |_ |/ _ \ '_ \| __|
+   Build-date: %buildda      | |__| | |__| |  __/ | | | |_
+                              \____/ \_____|\___|_| |_|\__|
 
 Useful Gyrid commands:
   Start - /etc/init.d/gyrid start
