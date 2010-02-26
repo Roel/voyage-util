@@ -1,3 +1,13 @@
+voyage-util (1:0.7-1ugent3) unstable; urgency=low
+
+  * Drop adjtimex, updated kernel should provide
+    a stable clock.
+  * debian/control:
+     - Fix spelling mistakes in description.
+     - Drop dependency on adjtimex, not needed anymore.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Fri, 26 Feb 2010 17:47:48 +0100
+
 voyage-util (1:0.7-1ugent2.1) unstable; urgency=low
 
   * Correct spelling mistake in MOTD.
