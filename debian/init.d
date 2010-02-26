@@ -73,9 +73,6 @@ case $1 in
 				rm -f /etc/ssh/ssh_host_dsa_key
 				ssh-keygen -q -t dsa -f /etc/ssh/ssh_host_dsa_key -N '' || { echo "Fatal Error: Failed to generate DSA keypair" >&2; exit; }
 
-				echo -ne "\n"
-				/usr/sbin/adjtimexconfig
-				
 				depmod -ae
 				
 				rm -f /voyage.1st

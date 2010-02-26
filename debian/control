@@ -8,6 +8,6 @@ Standards-Version: 3.6.1
 
 Package: voyage-util
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, adjtimex
-Description: This debian package contains all useful scripts for installing 
- and configurating voyage linix distribution.
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: This Debian package contains all useful scripts for installing
+ and configurating Voyage Linux distribution.
