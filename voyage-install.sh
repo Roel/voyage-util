@@ -475,7 +475,7 @@ if [ "$run_dialog" = 1 ]; then
 	# here we define the different choices which can be made by the user
 	# OPTIONS-Format: option "%" option "%" option
 	# option-Format:  number ":" description ":" preset (here: by command line)
-	OPTIONS="1:Specify Distribution Directory:$CLA_DISTDIR%2:Select Target Profile:$CLA_VOYAGE_PROFILE%3:Select Target Disk:$CLA_TARGET_DISK%4:Select Target Bootstrap Loader:$CLA_SYSTEM_BOOTSTRAP%5:Configure Target Console:$CLA_VOYAGE_SYSTEM_CONSOLE%6:Partition and Create Filesystem:$CLA_MAKEFS%7:Copy Distribution to Target:1%8:Set hostname:%CLA_SYSTEM_HOSTNAME%9:Exit:1"
+	OPTIONS="1:Specify Distribution Directory:$CLA_DISTDIR%2:Select Target Profile:$CLA_VOYAGE_PROFILE%3:Select Target Disk:$CLA_TARGET_DISK%4:Select Target Bootstrap Loader:$CLA_SYSTEM_BOOTSTRAP%5:Configure Target Console:$CLA_VOYAGE_SYSTEM_CONSOLE%6:Partition and Create Filesystem:$CLA_MAKEFS%7:Copy Distribution to Target:1%8:Set hostname:$CLA_SYSTEM_HOSTNAME%9:Exit:1"
 	
 	opt=1
 	while true
