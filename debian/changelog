@@ -1,3 +1,9 @@
+voyage-util (1:0.7-1ugent4) unstable; urgency=low
+
+  * Update MOTD to reflect Gyrid changes.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Tue, 16 Mar 2010 17:06:56 +0100
+
 voyage-util (1:0.7-1ugent3) unstable; urgency=low
 
   * Drop adjtimex, updated kernel should provide
