@@ -14,6 +14,8 @@
 
 Useful Gyrid commands:
   Start - /etc/init.d/gyrid start
-  Start in debug mode - /etc/init.d/gyrid start debug
-  Stop - /etc/init.d/gyrid stop
-  Show scanlog - tail -F /var/log/gyrid/serial/scan.log
+  Stop  - /etc/init.d/gyrid stop
+  Debug - /etc/init.d/gyrid debug
+  Track - /etc/init.d/gyrid track 00:11:22:33:44:55
+  Show scanlog - tail -F /var/log/gyrid/scan.log
+  More info - man gyrid
