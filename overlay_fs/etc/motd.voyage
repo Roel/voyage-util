@@ -1,9 +1,9 @@
  __      __
  \ \    / /
   \ \  / /___  _   _  __ _  __ _  ___       Built upon Voyage,
-   \ \/ // _ \| | | |/ _` |/ _` |/ _ \      a Debian GNU/Linux
-    \  /| (_) | |_| | (_| | (_| |  __/      derivative for ALIX.
-     \/  \___/ \__, |\__,_|\__, |\___|      http://linux.voyage.hk
+   \ \/ // _ \| | | |/ _  |/ _  |/ _ \      a Debian GNU/Linux
+    \  /| |_| | |_| | |_| | |_| |  __/      derivative for ALIX.
+     \/  \___/ \__  |\__ _|\__  |\___|      http://linux.voyage.hk
                 __/ |       __/ |
                |___/       |___/   _  _____            _
                              | |  | |/ ____|          | |
@@ -16,6 +16,6 @@ Useful Gyrid commands:
   Start - /etc/init.d/gyrid start
   Stop  - /etc/init.d/gyrid stop
   Debug - /etc/init.d/gyrid debug
-  Track - /etc/init.d/gyrid track 00:11:22:33:44:55
-  Show scanlog - tail -F /var/log/gyrid/scan.log
+  Show scan log - tail -F /var/log/gyrid/<MAC>/scan.log
+  Show RSSI log - tail -F /var/log/gyrid/<MAC>/rssi.log
   More info - man gyrid
