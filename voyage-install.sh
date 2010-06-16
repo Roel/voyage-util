@@ -303,9 +303,9 @@ fi
 # This attempts to set the default values
 #DISTDIR=`pwd`
 VOYAGE_PROFILE=ALIX
-TARGET_DISK=/dev/hde
+TARGET_DISK=/dev/sde
 TARGET_PART=1
-TARGET_MOUNT=/mnt/cf
+TARGET_MOUNT=/tmp/cf
 BOOTSTRAP_PART=1
 SYSTEM_BOOTSTRAP=grub
 SYSTEM_HOSTNAME=voyage
