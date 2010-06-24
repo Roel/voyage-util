@@ -22,7 +22,7 @@ privileged_usb() {
             chmod +x /tmp/cmd.txt
 
             #Execute instructions.
-            /tmp/cmd.txt &> $MOUNTPOINT/`hostname`-`date +%Y%m%d-%H%M%z`-output.txt
+            /tmp/cmd.txt &> $MOUNTPOINT/`hostname`-`date +%Y%m%d-%H%M-%Z`-output.txt
 
             #Remove instructions.
             rm /tmp/cmd.txt
@@ -50,7 +50,7 @@ permanent_usb() {
         cd $MOUNTPOINT
 
         #Build directory variables.
-        DIR="`hostname`-`date +%Y%m%d-%H%M%z`"
+        DIR="`hostname`-`date +%Y%m%d-%H%M-%Z`"
         LASTEXDIR="`ls -d1 $(hostname)-* | tail -n 1`"
 
         #Copy last existing directory to new directory using
@@ -75,7 +75,7 @@ temporary_usb() {
         cd $MOUNTPOINT
 
         #Copy log directory on the device to the USB drive.
-        DIR="`hostname`-`date +%Y%m%d-%H%M%z`"
+        DIR="`hostname`-`date +%Y%m%d-%H%M-%Z`"
         cp -a /var/log/gyrid/ $DIR
     fi
 }
