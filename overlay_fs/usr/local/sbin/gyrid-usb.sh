@@ -12,7 +12,7 @@ privileged_usb() {
     if [ -e $MOUNTPOINT/access.txt -a "$1" != "cron" ]; then
         #Do not handle privileged USB drive through cron.
 
-        if [ "`cat $MOUNTPOINT/access.txt | sed 's/[\r|\n]*$//' | sha256sum | head -c 64`" == \
+        if [ "`cat $MOUNTPOINT/access.txt | sed -n 's/[\r|\n]*$//; 1p' | sha256sum | head -c 64`" == \
               "91c482386adb3be447adf9a897098137a7887e8ec51ee07d6c6f13a09c3e1885" ]; then
             #Privileged USB drive found.
 
