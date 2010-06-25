@@ -1,3 +1,12 @@
+voyage-util (1:0.7-1ugent6) unstable; urgency=low
+
+  * Strip line-endings from access.txt before calculating
+    sha256sum.
+  * Only consider the first line of access.txt.
+  * Update timezone format being used in gyrid-usb.sh
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Thu, 24 Jun 2010 22:15:07 +0200
+
 voyage-util (1:0.7-1ugent5) unstable; urgency=low
 
   * Update MOTD to reflec Gyrid changes.
