@@ -9,24 +9,16 @@ dbus (+ bluetoothd) and Gyrid.
 import dbus
 import os
 import subprocess
+import time
 
 def popen(command):
-    environment = os.environ
-    environment["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-    try:
-        process = subprocess.Popen(command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            env=environment)
-
-        output, errors = process.communicate()
-    except:
-        #Something bad happened.
-        pass
-    else:
-        if process.returncode:
-            #Something bad happened.
-            pass
+    envmt = os.environ
+    envmt["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:" + \
+        "/sbin:/bin"
+    process = subprocess.Popen(command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=envmt)
 
 try:
     bus = dbus.SystemBus();
@@ -34,5 +26,8 @@ try:
     manager = dbus.Interface(obj, 'org.bluez.Manager')
 except:
     #BlueZ (or DBus) not running/crashed.
+    popen(["/etc/init.d/gyrid", "stop"])
+    time.sleep(11)
     popen(["/etc/init.d/dbus", "restart"]) #Will indirectly restart bluetoothd.
-    popen(["/etc/init.d/gyrid", "restart"])
+    time.sleep(3)
+    popen(["/etc/init.d/gyrid", "start"])
