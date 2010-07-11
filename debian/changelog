@@ -1,3 +1,9 @@
+voyage-util (1:0.7-1ugent7) unstable; urgency=low
+
+  * Fix the gyrid-restart.py script.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Sun, 11 Jul 2010 09:40:31 +0200
+
 voyage-util (1:0.7-1ugent6) unstable; urgency=low
 
   * Strip line-endings from access.txt before calculating
