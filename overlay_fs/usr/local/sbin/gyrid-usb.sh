@@ -74,9 +74,47 @@ temporary_usb() {
         #Do not interact with temporary USB drive through cron.
         cd $MOUNTPOINT
 
-        #Copy log directory on the device to the USB drive.
+        #Create log directory on USB device.
         DIR="`hostname`-`date +%Y%m%d-%H%M-%Z`"
-        cp -a /var/log/gyrid/ $DIR
+        mkdir $DIR
+
+        #Write device uptime to meta.txt
+        echo -ne "Uptime:\n`uptime`\n\n" >> $DIR/meta.txt
+
+        #Copy over the logs.
+        rsync -a /var/log/gyrid/ $DIR/original_logs
+        cp -a $DIR/original_logs $DIR/merged_logs
+
+        #Merge the logs.
+        for i in `ls -1 $DIR/merged_logs | grep -E "([0-F][0-F]){5}[0-F][0-F]"`; do
+            cd $DIR/merged_logs/$i
+                bunzip2 *.bz2*
+
+                cat scan.log.* >> scan.log
+                sort scan.log > scan_s.log
+                grep -E "^[0-9]{8}-[0-9]{6}-[A-z]*,([0-F][0-F]:){5}[0-F][0-F],[0-9]*,(in|out|pass)$" scan_s.log > scan.log
+                rm scan_s.log scan.log.*
+
+                cat rssi.log.* >> rssi.log
+                sort rssi.log > rssi_s.log
+                grep -E "^[0-9]{8}-[0-9]{6}-[A-z]*,([0-F][0-F]:){5}[0-F][0-F],-?[0-9]+$" rssi_s.log > rssi.log
+                rm rssi_s.log rssi.log.*
+
+                lines_scan=`wc -l < scan.log`
+                lines_rssi=`wc -l < rssi.log`
+                uniq_macs=`cat scan.log | awk -F , '{print $2}' | sort | uniq | wc -l`
+            cd -
+
+            #Write useful statistics to meta.txt
+            echo -ne "Sensor $i:\n" >> $DIR/meta.txt
+            echo -ne "  Number of loglines in scan.log: $lines_scan\n" >> $DIR/meta.txt
+            echo -ne "  Number of loglines in rssi.log: $lines_rssi\n" >> $DIR/meta.txt
+            echo -ne "  Number of unique MAC-addresses: $uniq_macs\n\n" >> $DIR/meta.txt
+        done
+
+        #Write package versions to packages.txt
+        dpkg-query -W -f='${Package}: ${Version}\n ${Status}\n\n' | grep -E ': [^ ]+$' > $DIR/packages.txt
+
     fi
 }
 
