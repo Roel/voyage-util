@@ -510,6 +510,7 @@ if [ "$run_dialog" = 1 ]; then
 	# Just for testing we write out the results to a local file
 	write_config "test.conf" "$VOYAGE_CONF_LIST"
 else 
+    select-profile $DISTDIR run
 	confirm_copy_details run
 fi
 

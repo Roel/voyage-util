@@ -111,10 +111,13 @@ update_grub()
 		ghome=/boot
 		gp=${TARGET_MOUNT}${ghome}
 	fi
+
 	if [ ! -d ${gp}/grub ]; then
 		# create the grub directory in the boot partition
 		mkdir ${gp}/grub
+
 		# copy the grub files into it
+		echo "Copy grub files from ${TARGET_MOUNT} to ${gp}/grub"
 		if [ -d ${TARGET_MOUNT}/lib/grub/i386-pc/ ] ; then 
 			cp ${TARGET_MOUNT}/lib/grub/i386-pc/* ${gp}/grub
 		elif [ -d ${TARGET_MOUNT}/usr/lib/grub/i386-pc/ ] ; then 
@@ -126,6 +129,7 @@ update_grub()
 		else
 			err_quit "Can't find grub files - exiting"
 		fi
+
 		# create a grub device map for the installation
 		dm="/grub/device.map"
 		echo "(hd0) $TARGET_DISK" > ${gp}${dm}
@@ -134,6 +138,7 @@ update_grub()
 		# directory from our current system.
 		mount -o bind /dev $TARGET_MOUNT/dev
 
+		echo "Setting up grub under chroot $TARGET_MOUNT"
 		# note the arithmetic evaluation (grub uses '0' as
 		# the first partition)
 		res=`chroot $TARGET_MOUNT /usr/sbin/grub \
@@ -207,9 +212,11 @@ EOM
 	fi
 
 	if [ $SYSTEM_BOOTSTRAP == lilo ]; then
+		echo "Installing lilo"
 		make_lilo_conf
 		update_lilo
 	else
+		echo "Installing grub"
 		update_grub
 	fi
 

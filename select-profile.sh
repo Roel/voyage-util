@@ -48,12 +48,15 @@ cd $RUNDIR
 # in the following call to ask_setting (list_str returns ix in $v)
 list_str "$prolist" "$VOYAGE_PROFILE"
 
-# Now that we have the data, present it to the user
-# (ask_setting returns the user's choice in $v)
-ask_setting "Please select Voyage profile:" "$prolist" $v
+# if "run" is not defined, ask user for profile...
+if [ "$2" != "run" ] ; then
+    # Now that we have the data, present it to the user
+    # (ask_setting returns the user's choice in $v)
+    ask_setting "Please select Voyage profile:" "$prolist" $v
+fi
+
 # save the user's choice - we'll need it when we fetch the file contents
 proix=$v
-
 list_str "$prolist" "$VOYAGE_PROFILE"
 # Translate the numeric choice into the corresponding profile name
 # (list_ix returns the name in $w)

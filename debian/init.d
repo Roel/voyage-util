@@ -1,13 +1,13 @@
 #! /bin/sh
 ### BEGIN INIT INFO
 # Provides:          voyage-util
+# Short-Description: Voyage Init script
 # Required-Start:    $all
-# Required-Stop:     
+# Required-Stop:     $all
 # Should-Start:      
 # Should-Stop:       
 # Default-Start:     2 3 4 5 
-# Default-Stop:      
-# Short-Description: Voyage Init script
+# Default-Stop:      0 1 6
 ### END INIT INFO
 #
 # skeleton  example file to build /etc/init.d/ scripts.
@@ -73,7 +73,8 @@ case $1 in
 				rm -f /etc/ssh/ssh_host_dsa_key
 				ssh-keygen -q -t dsa -f /etc/ssh/ssh_host_dsa_key -N '' || { echo "Fatal Error: Failed to generate DSA keypair" >&2; exit; }
 
-				depmod -ae
+				#depmod -ae
+				depmod -a
 				
 				rm -f /voyage.1st
 				echo "Done."		
@@ -85,7 +86,7 @@ case $1 in
 		#echo -n "Remounting / as read-only ... "
 		#/bin/mount / -o remount,ro
 		#/usr/local/sbin/remountro
-		#echo "Done."		
+		#echo "Done."
 		start_leds
 		;;
 	'stop')

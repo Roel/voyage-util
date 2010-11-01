@@ -1,4 +1,14 @@
 #! /bin/sh
+### BEGIN INIT INFO
+# Provides:          voyage-pxe
+# Required-Start:    $all
+# Required-Stop:
+# Should-Start:
+# Should-Stop:
+# Default-Start:
+# Default-Stop:
+# Short-Description: Voyage PXE start/stop script
+### END INIT INFO
 #
 # skeleton  example file to build /etc/init.d/ scripts.
 #       This file should be used to construct scripts for /etc/init.d.
