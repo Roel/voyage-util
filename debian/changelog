@@ -1,3 +1,10 @@
+voyage-util (1:0.8-1ugent1) unstable; urgency=low
+
+  * Import upstream's 0.8 release.
+  * Update for data-readouts through USB memory drive.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Mon, 01 Nov 2010 17:30:35 +0100
+
 voyage-util (0.8-1) unstable; urgency=low
 
   * insserv compatible
