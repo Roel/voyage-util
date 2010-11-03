@@ -93,17 +93,20 @@ temporary_usb() {
                 cat scan.log.* >> scan.log
                 sort scan.log > scan_s.log
                 grep -E "^[0-9]{8}-[0-9]{6}-[A-z]*,([0-F][0-F]:){5}[0-F][0-F],[0-9]*,(in|out|pass)$" scan_s.log > scan.log
-                rm scan_s.log scan.log.*
 
                 cat rssi.log.* >> rssi.log
                 sort rssi.log > rssi_s.log
                 grep -E "^[0-9]{8}-[0-9]{6}-[A-z]*,([0-F][0-F]:){5}[0-F][0-F],-?[0-9]+$" rssi_s.log > rssi.log
-                rm rssi_s.log rssi.log.*
 
                 lines_scan=`wc -l < scan.log`
                 lines_rssi=`wc -l < rssi.log`
                 uniq_macs=`cat scan.log | awk -F , '{print $2}' | sort | uniq | wc -l`
+
+                mv scan.log ../`hostname`-$i-scan.log
+                mv rssi.log ../`hostname`-$i-rssi.log
             cd -
+
+            rm -r $DIR/merged_logs/$i
 
             #Write useful statistics to meta.txt
             echo -ne "Sensor $i:\n" >> $DIR/meta.txt
