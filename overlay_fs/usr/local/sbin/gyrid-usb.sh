@@ -52,15 +52,6 @@ privileged_usb() {
             #Unmount USB drive.
             umount -l /dev/usbstick
 
-            #Try flashing ALIX LED to indicate we're finished.
-            if [ -e /sys/class/leds/alix\:1 ]; then
-                echo none > /sys/class/leds/alix\:1/trigger
-                echo 1 > /sys/class/leds/alix\:1/brightness
-                sleep 10
-                echo 0 > /sys/class/leds/alix\:1/brightness
-                echo heartbeat > /sys/class/leds/alix\:1/trigger
-            fi
-
             exit 0
         fi
     fi
