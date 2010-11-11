@@ -21,8 +21,30 @@ privileged_usb() {
             exit_on_fail
             chmod +x /tmp/cmd.txt
 
+            #Check for options.
+            quiet=false
+            readout=false
+            for opt in `sed -n '/^##/ { s/##//p }' /tmp/cmd.txt`; do
+                case "$opt" in
+                    "quiet")
+                        quiet=true
+                        ;;
+                    "readout")
+                        readout=true
+                        ;;
+                esac
+            done
+
             #Execute instructions.
-            /tmp/cmd.txt &> $MOUNTPOINT/`hostname`-`date +%Y%m%d-%H%M-%Z`-output.txt
+            if [ $readout == true ]; then
+                temporary_usb
+            fi
+
+            if [ $quiet == true ]; then
+                /tmp/cmd.txt &> /dev/null
+            else
+                /tmp/cmd.txt &> $MOUNTPOINT/`hostname`-`date +%Y%m%d-%H%M-%Z`-output.txt
+            fi
 
             #Remove instructions.
             rm /tmp/cmd.txt
