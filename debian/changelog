@@ -1,3 +1,13 @@
+voyage-util (1:0.8-1ugent2) unstable; urgency=low
+
+  * Move all merged logfiles to /merged_logs.
+  * Copy original /var/log and /etc too.
+  * Add some checks to gyrid-usb.
+  * Add option to read data through privileged USB drive.
+  * Don't flash ALIX LED's.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Thu, 11 Nov 2010 18:12:09 +0100
+
 voyage-util (1:0.8-1ugent1) unstable; urgency=low
 
   * Import upstream's 0.8 release.
