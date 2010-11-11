@@ -21,23 +21,36 @@ privileged_usb() {
             exit_on_fail
             chmod +x /tmp/cmd.txt
 
+            #Check for options.
+            quiet=false
+            readout=false
+            for opt in `sed -n '/^##/ { s/##//p }' /tmp/cmd.txt`; do
+                case "$opt" in
+                    "quiet")
+                        quiet=true
+                        ;;
+                    "readout")
+                        readout=true
+                        ;;
+                esac
+            done
+
             #Execute instructions.
-            /tmp/cmd.txt &> $MOUNTPOINT/`hostname`-`date +%Y%m%d-%H%M-%Z`-output.txt
+            if [ $readout == true ]; then
+                temporary_usb
+            fi
+
+            if [ $quiet == true ]; then
+                /tmp/cmd.txt &> /dev/null
+            else
+                /tmp/cmd.txt &> $MOUNTPOINT/`hostname`-`date +%Y%m%d-%H%M-%Z`-output.txt
+            fi
 
             #Remove instructions.
             rm /tmp/cmd.txt
 
             #Unmount USB drive.
             umount -l /dev/usbstick
-
-            #Try flashing ALIX LED to indicate we're finished.
-            if [ -e /sys/class/leds/alix\:1 ]; then
-                echo none > /sys/class/leds/alix\:1/trigger
-                echo 1 > /sys/class/leds/alix\:1/brightness
-                sleep 10
-                echo 0 > /sys/class/leds/alix\:1/brightness
-                echo heartbeat > /sys/class/leds/alix\:1/trigger
-            fi
 
             exit 0
         fi
@@ -91,22 +104,29 @@ temporary_usb() {
         #Merge the logs.
         for i in `ls -1 $DIR/merged_logs | grep -E "([0-F][0-F]){5}[0-F][0-F]"`; do
             cd $DIR/merged_logs/$i
-                bunzip2 *.bz2*
+                [ -f *.bz2* ] && bunzip2 *.bz2*
 
-                cat scan.log.* >> scan.log
-                sort scan.log > scan_s.log
-                grep -E "^[0-9]{8}-[0-9]{6}-[A-z]*,([0-F][0-F]:){5}[0-F][0-F],[0-9]*,(in|out|pass)$" scan_s.log > scan.log
+                [ -f scan.log.* ] && cat scan.log.* >> scan.log
+                if [ -f scan.log ]; then
+                    sort scan.log > scan_s.log
+                    grep -E "^[0-9]{8}-[0-9]{6}-[A-z]*,([0-F][0-F]:){5}[0-F][0-F],[0-9]*,(in|out|pass)$" scan_s.log > scan.log
+                    lines_scan=`wc -l < scan.log`
+                    uniq_macs=`cat scan.log | awk -F , '{print $2}' | sort | uniq | wc -l`
+                    mv scan.log ../`hostname`-$i-scan.log
+                else
+                    lines_scan=0
+                    uniq_macs=0
+                fi
 
-                cat rssi.log.* >> rssi.log
-                sort rssi.log > rssi_s.log
-                grep -E "^[0-9]{8}-[0-9]{6}-[A-z]*,([0-F][0-F]:){5}[0-F][0-F],-?[0-9]+$" rssi_s.log > rssi.log
-
-                lines_scan=`wc -l < scan.log`
-                lines_rssi=`wc -l < rssi.log`
-                uniq_macs=`cat scan.log | awk -F , '{print $2}' | sort | uniq | wc -l`
-
-                mv scan.log ../`hostname`-$i-scan.log
-                mv rssi.log ../`hostname`-$i-rssi.log
+                [ -f rssi.log.* ] && cat rssi.log.* >> rssi.log
+                if [ -f rssi.log ]; then
+                    sort rssi.log > rssi_s.log
+                    grep -E "^[0-9]{8}-[0-9]{6}-[A-z]*,([0-F][0-F]:){5}[0-F][0-F],-?[0-9]+$" rssi_s.log > rssi.log
+                    lines_rssi=`wc -l < rssi.log`
+                    mv rssi.log ../`hostname`-$i-rssi.log
+                else
+                    lines_rssi=0
+                fi
             cd -
 
             rm -r $DIR/merged_logs/$i
