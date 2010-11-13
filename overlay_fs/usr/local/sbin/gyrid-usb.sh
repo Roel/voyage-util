@@ -63,22 +63,22 @@ permanent_usb() {
         cd $MOUNTPOINT
 
         #Build directory variables.
-        DIR="`hostname`-`date +%Y%m%d-%H%M-%Z`"
+        DATADIR="`hostname`-`date +%Y%m%d-%H%M-%Z`"
         LASTEXDIR="`ls -d1 $(hostname)-* | tail -n 1`"
 
         #Copy last existing directory to new directory using
         #hard links.
         if [ "$LASTEXDIR" != "" ]; then
-            cp -al $LASTEXDIR $DIR
+            cp -al $LASTEXDIR $DATADIR
             RSYNCLINKS="--link-dest=$MOUNTPOINT/$LASTEXDIR"
         else
-            mkdir $DIR
+            mkdir $DATADIR
             RSYNCLINKS=""
         fi
 
         #Rsync the log directory on the device with the new
         #directory.
-        rsync -a $RSYNCLINKS --delete "/var/log/gyrid/" $DIR
+        rsync -a $RSYNCLINKS --delete "/var/log/gyrid/" $DATADIR
     fi
 }
 
@@ -88,22 +88,22 @@ temporary_usb() {
         cd $MOUNTPOINT
 
         #Create log directory on USB device.
-        DIR="`hostname`-`date +%Y%m%d-%H%M-%Z`"
-        mkdir $DIR
+        export DATADIR="`hostname`-`date +%Y%m%d-%H%M-%Z`"
+        mkdir $DATADIR
 
         #Write device uptime to meta.txt
-        echo -ne "Uptime:\n`uptime`\n\n" >> $DIR/meta.txt
+        echo -ne "Uptime:\n`uptime`\n\n" >> $DATADIR/meta.txt
 
         #Copy over the logs.
-        mkdir -p $DIR/original_logs/var_log
-        mkdir -p $DIR/original_logs/etc
-        rsync -a --copy-links /var/log/ $DIR/original_logs/var_log
-        rsync -a --copy-links /etc/ $DIR/original_logs/etc
-        cp -a $DIR/original_logs/var_log/gyrid $DIR/merged_logs
+        mkdir -p $DATADIR/original_logs/var_log
+        mkdir -p $DATADIR/original_logs/etc
+        rsync -a --copy-links /var/log/ $DATADIR/original_logs/var_log
+        rsync -a --copy-links /etc/ $DATADIR/original_logs/etc
+        cp -a $DATADIR/original_logs/var_log/gyrid $DATADIR/merged_logs
 
         #Merge the logs.
-        for i in `ls -1 $DIR/merged_logs | grep -E "([0-F][0-F]){5}[0-F][0-F]"`; do
-            cd $DIR/merged_logs/$i
+        for i in `ls -1 $DATADIR/merged_logs | grep -E "([0-F][0-F]){5}[0-F][0-F]"`; do
+            cd $DATADIR/merged_logs/$i
                 [ -f *.bz2* ] && bunzip2 *.bz2*
 
                 [ -f scan.log.* ] && cat scan.log.* >> scan.log
@@ -129,17 +129,17 @@ temporary_usb() {
                 fi
             cd -
 
-            rm -r $DIR/merged_logs/$i
+            rm -r $DATADIR/merged_logs/$i
 
             #Write useful statistics to meta.txt
-            echo -ne "Sensor $i:\n" >> $DIR/meta.txt
-            echo -ne "  Number of loglines in scan.log: $lines_scan\n" >> $DIR/meta.txt
-            echo -ne "  Number of loglines in rssi.log: $lines_rssi\n" >> $DIR/meta.txt
-            echo -ne "  Number of unique MAC-addresses: $uniq_macs\n\n" >> $DIR/meta.txt
+            echo -ne "Sensor $i:\n" >> $DATADIR/meta.txt
+            echo -ne "  Number of loglines in scan.log: $lines_scan\n" >> $DATADIR/meta.txt
+            echo -ne "  Number of loglines in rssi.log: $lines_rssi\n" >> $DATADIR/meta.txt
+            echo -ne "  Number of unique MAC-addresses: $uniq_macs\n\n" >> $DATADIR/meta.txt
         done
 
         #Write package versions to packages.txt
-        dpkg-query -W -f='${Package}: ${Version}\n ${Status}\n\n' | grep -E ': [^ ]+$' > $DIR/original_logs/packages.txt
+        dpkg-query -W -f='${Package}: ${Version}\n ${Status}\n\n' | grep -E ': [^ ]+$' > $DATADIR/original_logs/packages.txt
 
     fi
 }
