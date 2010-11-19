@@ -82,6 +82,17 @@ $EXECDIR/copyfiles.sh
 
 ########################################################################
 
+while true
+do
+    read_response "Please specify the hostname of the installed system: " a
+    if [ "$a" != "" ]; then
+        echo "$a" > $DISTDIR/etc/hostname
+        break
+    fi
+done
+
+########################################################################
+
 cd $RUNDIR
 umount $DISTDIR
 
