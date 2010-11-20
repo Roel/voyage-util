@@ -91,4 +91,5 @@ echo "  If you want to stop, please press Ctrl+C now !!"
 echo "########################################################################"
 sleep 5
 if [ $? != 0 ] ; then exit 1; fi
+echo 0 > /sys/class/leds/alix\:1/brightness
 halt
