@@ -91,5 +91,4 @@ echo "  If you want to stop, please press Ctrl+C now !!"
 echo "########################################################################"
 sleep 5
 if [ $? != 0 ] ; then exit 1; fi
-reboot
-
+halt
