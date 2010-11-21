@@ -109,7 +109,7 @@ temporary_usb() {
                 [ `ls -1 scan.log.* | wc -l` -gt 0 ] && cat scan.log.* >> scan.log
                 if [ -f scan.log ]; then
                     sort scan.log > scan_s.log
-                    grep -E "^[0-9]{8}-[0-9]{6}-[A-Za-z]*,([0-9A-F][0-9A-F]:){5}[0-9A-F][0-9A-F],[0-9]*,(in|out|pass)$" scan_s.log > scan.log
+                    grep -aE "^[0-9]{8}-[0-9]{6}-[A-Za-z]*,([0-9A-F][0-9A-F]:){5}[0-9A-F][0-9A-F],[0-9]*,(in|out|pass)$" scan_s.log > scan.log
                     lines_scan=`wc -l < scan.log`
                     uniq_macs=`cat scan.log | awk -F , '{print $2}' | sort | uniq | wc -l`
                     mv scan.log ../`hostname`-$i-scan.log
@@ -121,7 +121,7 @@ temporary_usb() {
                 [ `ls -1 rssi.log.* | wc -l` -gt 0 ] && cat rssi.log.* >> rssi.log
                 if [ -f rssi.log ]; then
                     sort rssi.log > rssi_s.log
-                    grep -E "^[0-9]{8}-[0-9]{6}-[A-Za-z]*,([0-9A-F][0-9A-F]:){5}[0-9A-F][0-9A-F],-?[0-9]+$" rssi_s.log > rssi.log
+                    grep -aE "^[0-9]{8}-[0-9]{6}-[A-Za-z]*,([0-9A-F][0-9A-F]:){5}[0-9A-F][0-9A-F],-?[0-9]+$" rssi_s.log > rssi.log
                     lines_rssi=`wc -l < rssi.log`
                     mv rssi.log ../`hostname`-$i-rssi.log
                 else
