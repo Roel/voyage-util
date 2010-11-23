@@ -1,3 +1,9 @@
+voyage-util (1:0.8-1ugent4) unstable; urgency=low
+
+  * Fix the merge part of gyrid-usb.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Sun, 21 Nov 2010 12:39:43 +0100
+
 voyage-util (1:0.8-1ugent3) unstable; urgency=low
 
   * Export $DATADIR variable in gyrid-usb to enable cmd scripts to use it.
