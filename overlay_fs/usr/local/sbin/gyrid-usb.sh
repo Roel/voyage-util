@@ -3,6 +3,12 @@
 exit_on_fail() {
     #Exit if previous command was unsuccessful.
     if [ $? != 0 ]; then
+
+        #Disable swap
+        if [ -f $MOUNTPOINT/swap ]; then
+            swapoff $MOUNTPOINT/swap
+        fi
+
         umount -l /dev/usbstick
         exit 1
     fi
@@ -63,115 +69,134 @@ permanent_usb() {
         cd $MOUNTPOINT
 
         #Build directory variables.
-        DATADIR="`hostname`-`date +%Y%m%d-%H%M-%Z`"
+        DATAPATH="`hostname`-`date +%Y%m%d-%H%M-%Z`"
         LASTEXDIR="`ls -d1 $(hostname)-* | tail -n 1`"
 
         #Copy last existing directory to new directory using
         #hard links.
         if [ "$LASTEXDIR" != "" ]; then
-            cp -al $LASTEXDIR $DATADIR
+            cp -al $LASTEXDIR $DATAPATH
             RSYNCLINKS="--link-dest=$MOUNTPOINT/$LASTEXDIR"
         else
-            mkdir $DATADIR
+            mkdir $DATAPATH
             RSYNCLINKS=""
         fi
 
         #Rsync the log directory on the device with the new
         #directory.
-        rsync -a $RSYNCLINKS --delete "/var/log/gyrid/" $DATADIR
+        rsync -a $RSYNCLINKS --delete "/var/log/gyrid/" $DATAPATH
     fi
 }
 
 temporary_usb() {
+    #Do not interact with temporary USB drive through cron.
     if [ "$1" != "cron" ]; then
-        #Do not interact with temporary USB drive through cron.
-        cd $MOUNTPOINT
-
         #Create log directory on USB device.
-        export DATADIR="`hostname`-`date +%Y%m%d-%H%M-%Z`"
-        mkdir $DATADIR
+        DATADIR="`hostname`-`date +%Y%m%d-%H%M-%Z`"
+        export DATAPATH=$MOUNTPOINT/$DATADIR
+        mkdir $DATAPATH
 
         #Write device uptime to meta.txt
-        echo -ne "Uptime:\n`uptime`\n\n" >> $DATADIR/meta.txt
+        echo -ne "Uptime:\n`uptime`\n\n" >> $DATAPATH/meta.txt
 
         #Copy over the logs.
-        mkdir -p $DATADIR/original_logs/var_log
-        mkdir -p $DATADIR/original_logs/etc
-        rsync -a --copy-links /var/log/ $DATADIR/original_logs/var_log
-        rsync -a --copy-links /etc/ $DATADIR/original_logs/etc
-        cp -a $DATADIR/original_logs/var_log/gyrid $DATADIR/merged_logs
+        mkdir -p $DATAPATH/original_logs/var_log
+        mkdir -p $DATAPATH/original_logs/etc
+        mkdir -p $DATAPATH/merged_logs
+        rsync -a --copy-links /var/log/ $DATAPATH/original_logs/var_log
+        rsync -a --copy-links /etc/ $DATAPATH/original_logs/etc
 
         #Merge the logs.
-        for i in `ls -1 $DATADIR/merged_logs | grep -E "([0-9A-F][0-9A-F]){5}[0-9A-F][0-9A-F]"`; do
-            cd $DATADIR/merged_logs/$i
-                [ `ls -1 *.bz2* | wc -l` -gt 0 ] && bunzip2 *.bz2*
+        for i in `ls -1 $DATAPATH/original_logs/var_log/gyrid | grep -E "([0-9A-F]){12}"`; do
+            mkdir -p $DATAPATH/merged_logs/$i
+            cd $DATAPATH/original_logs/var_log/gyrid/$i
 
-                [ `ls -1 scan.log.* | wc -l` -gt 0 ] && cat scan.log.* >> scan.log
-                if [ -f scan.log ]; then
-                    sort scan.log > scan_s.log
-                    grep -aE "^[0-9]{8}-[0-9]{6}-[A-Za-z]*,([0-9A-F][0-9A-F]:){5}[0-9A-F][0-9A-F],[0-9]*,(in|out|pass)$" scan_s.log > scan.log
-                    lines_scan=`wc -l < scan.log`
-                    uniq_macs=`cat scan.log | awk -F , '{print $2}' | sort | uniq | wc -l`
-                    mv scan.log ../`hostname`-$i-scan.log
-                else
-                    lines_scan=0
-                    uniq_macs=0
-                fi
+                lines=`/usr/local/sbin/gyrid-unzip.py $DATAPATH/merged_logs/$i`
 
-                [ `ls -1 rssi.log.* | wc -l` -gt 0 ] && cat rssi.log.* >> rssi.log
-                if [ -f rssi.log ]; then
-                    sort rssi.log > rssi_s.log
-                    grep -aE "^[0-9]{8}-[0-9]{6}-[A-Za-z]*,([0-9A-F][0-9A-F]:){5}[0-9A-F][0-9A-F],-?[0-9]+$" rssi_s.log > rssi.log
-                    lines_rssi=`wc -l < rssi.log`
-                    mv rssi.log ../`hostname`-$i-rssi.log
-                else
-                    lines_rssi=0
-                fi
-            cd -
+                cd $DATAPATH/merged_logs/$i
+                    if [ -f scan.log ]; then
+                        sort -T $MOUNTPOINT scan.log -o scan.log
+                        lines_scan=`echo $lines | awk '{print $1}'`
+                        uniq_macs=`echo $lines | awk '{print $3}'`
+                        mv scan.log ../`hostname`-$i-scan.log
+                    else
+                        lines_scan=0
+                        uniq_macs=0
+                    fi
 
-            rm -r $DATADIR/merged_logs/$i
+                    if [ -f rssi.log ]; then
+                        sort -T $MOUNTPOINT rssi.log -o rssi.log
+                        lines_rssi=`echo $lines | awk '{print $2}'`
+                        mv rssi.log ../`hostname`-$i-rssi.log
+                    else
+                        lines_rssi=0
+                    fi
+
+            rm -r $DATAPATH/merged_logs/$i
 
             #Write useful statistics to meta.txt
-            echo -ne "Sensor $i:\n" >> $DATADIR/meta.txt
-            echo -ne "  Number of loglines in scan.log: $lines_scan\n" >> $DATADIR/meta.txt
-            echo -ne "  Number of loglines in rssi.log: $lines_rssi\n" >> $DATADIR/meta.txt
-            echo -ne "  Number of unique MAC-addresses: $uniq_macs\n\n" >> $DATADIR/meta.txt
+            echo -ne "Sensor $i:\n" >> $DATAPATH/meta.txt
+            echo -ne "  Number of loglines in scan.log: $lines_scan\n" >> $DATAPATH/meta.txt
+            echo -ne "  Number of loglines in rssi.log: $lines_rssi\n" >> $DATAPATH/meta.txt
+            echo -ne "  Number of unique MAC-addresses: $uniq_macs\n\n" >> $DATAPATH/meta.txt
         done
 
         #Write package versions to packages.txt
-        dpkg-query -W -f='${Package}: ${Version}\n ${Status}\n\n' | grep -E ': [^ ]+$' > $DATADIR/original_logs/packages.txt
+        dpkg-query -W -f='${Package}: ${Version}\n ${Status}\n\n' | grep -E ': [^ ]+$' > $DATAPATH/original_logs/packages.txt
 
     fi
 }
 
 #Continue only if there is a USB drive attached.
 if [ -e /dev/usbstick ]; then
-    #Set variables
-    export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-    export MOUNTPOINT="/mnt/usbstick"
 
-    #Try to mount the USB drive as ext3.
-    mount -t ext3 /dev/usbstick $MOUNTPOINT
+    #Continue only if no USB drive has been mounted yet.
+    if [ `grep usbstick /proc/mounts | wc -l` -eq 0 ]; then
 
-    if [ $? == 0 ]; then
-        #Mount successful
+        #Set variables
+        export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+        export MOUNTPOINT="/mnt/usbstick"
 
-        privileged_usb $1
-        permanent_usb $1
-
-    else
-        #Mount unsuccessful, try mounting with different filesystem.
-        mount -t auto /dev/usbstick $MOUNTPOINT
+        #Try to mount the USB drive as ext3.
+        mount -t ext3 /dev/usbstick $MOUNTPOINT
 
         if [ $? == 0 ]; then
             #Mount successful
 
+            #Enable swap
+            if [ -f $MOUNTPOINT/swap ]; then
+                mkswap $MOUNTPOINT/swap
+                swapon $MOUNTPOINT/swap
+            fi
+
             privileged_usb $1
-            temporary_usb $1
+            permanent_usb $1
 
+        else
+            #Mount unsuccessful, try mounting with different filesystem.
+            mount -t auto /dev/usbstick $MOUNTPOINT
+
+            if [ $? == 0 ]; then
+                #Mount successful
+
+                #Enable swap
+                if [ -f $MOUNTPOINT/swap ]; then
+                    mkswap $MOUNTPOINT/swap
+                    swapon $MOUNTPOINT/swap
+                fi
+
+                privileged_usb $1
+                temporary_usb $1
+
+            fi
         fi
-    fi
 
-    #Unmount the USB drive.
-    umount -l /dev/usbstick
+        #Disable swap
+        if [ -f $MOUNTPOINT/swap ]; then
+            swapoff $MOUNTPOINT/swap
+        fi
+
+        #Unmount the USB drive.
+        umount -l /dev/usbstick
+    fi
 fi
