@@ -91,6 +91,12 @@ permanent_usb() {
 temporary_usb() {
     #Do not interact with temporary USB drive through cron.
     if [ "$1" != "cron" ]; then
+        #Start LED flashing
+        touch /tmp/gyrid-led-disabled
+        echo heartbeat > /sys/class/leds/alix\:1/trigger
+        echo heartbeat > /sys/class/leds/alix\:2/trigger
+        echo heartbeat > /sys/class/leds/alix\:3/trigger
+
         #Create log directory on USB device.
         DATADIR="`hostname`-`date +%Y%m%d-%H%M-%Z`"
         export DATAPATH=$MOUNTPOINT/$DATADIR
@@ -143,6 +149,11 @@ temporary_usb() {
 
         #Write package versions to packages.txt
         dpkg-query -W -f='${Package}: ${Version}\n ${Status}\n\n' | grep -E ': [^ ]+$' > $DATAPATH/original_logs/packages.txt
+
+        #Stop LED flashing
+        echo none > /sys/class/leds/alix\:2/trigger
+        echo none > /sys/class/leds/alix\:3/trigger
+        rm /tmp/gyrid-led-disabled
 
     fi
 }
