@@ -1,3 +1,10 @@
+voyage-util (1:0.8-1ugent5) unstable; urgency=low
+
+  * Performance improvements in gyrid-usb.
+  * Flash ALIX LED's while reading data.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Tue, 15 Feb 2011 19:20:52 +0100
+
 voyage-util (1:0.8-1ugent4) unstable; urgency=low
 
   * Fix the merge part of gyrid-usb.
