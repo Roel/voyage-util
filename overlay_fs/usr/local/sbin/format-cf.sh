@@ -34,6 +34,7 @@ doopt () {
 	# for backward compatibility	
 	if [ $# = 1 ]; then 
 		TARGET_DISK="$1"
+		TARGET_PART="$TARGET_DISK"
 		return;
 	fi
 
@@ -86,6 +87,7 @@ esac
 	
 
 [ -b "$TARGET_DISK" ] && echo -e "$SFDISKCMD" | sfdisk "$TARGET_DISK"
+sleep 1
 [ -b "$TARGET_PART" ] && { 
 	mkfs.ext3 $TARGET_PART
 	tune2fs -c 1 $TARGET_PART -L ROOT_FS
