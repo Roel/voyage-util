@@ -17,7 +17,7 @@ source $EXECDIR/script-utils.sh
 source $EXECDIR/select-profile.sh
 
 DISTDIR=/tmp/root
-TARGET_DISK="/dev/hda"
+TARGET_DISK="/dev/sda"
 TARGET_PART=1 
 TARGET_MOUNT="/tmp/cf" 
 BOOTSTRAP_PART=1
@@ -36,18 +36,21 @@ source $PROFILE_FILE
 
 echo "########################################################################"
 echo "  WARNING: Voyage UGent Auto-Install will start in 5 seconds.  It will "
-echo "           erase your disk in $TARGET_DISK.  If you want to stop, please"
-echo "           press Ctrl+C now !!"
+echo "           erase your disk in $TARGET_DISK."
 echo "########################################################################"
 sleep 5
 if [ $? != 0 ] ; then exit 1; fi
 
 ########################################################################
 
+echo heartbeat > /sys/class/leds/alix\:1/trigger
+echo heartbeat > /sys/class/leds/alix\:2/trigger
+echo heartbeat > /sys/class/leds/alix\:3/trigger
+
 if [ ! -d $DISTDIR ] ; then mkdir $DISTDIR ; fi
 if [ ! -d $TARGET_MOUNT ] ; then mkdir $TARGET_MOUNT ; fi
-umount $DISTDIR > /dev/null
-umount $TARGET_MOUNT > /dev/null
+umount $DISTDIR &> /dev/null
+umount $TARGET_MOUNT &> /dev/null
 
 SQFS=$(find / -name "filesystem.squashfs" | head -n1)
 if [ ! -z $SQFS ] ; then
@@ -58,6 +61,16 @@ else
 fi
 
 cd $DISTDIR
+
+########################################################################
+
+mount -t auto $TARGET_DISK$TARGET_PART $TARGET_MOUNT
+if [ -f $TARGET_MOUNT/etc/hostname ]; then
+    cat $TARGET_MOUNT/etc/hostname > /tmp/target-hostname
+else
+    echo voyage > /tmp/target-hostname
+fi
+umount $TARGET_MOUNT
 
 ########################################################################
 
@@ -79,6 +92,8 @@ save_config_var VOYAGE_SYSTEM_CONSOLE VOYAGE_CONF_LIST
 ########################################################################
 
 $EXECDIR/copyfiles.sh
+cat /tmp/target-hostname > $TARGET_MOUNT/etc/hostname
+umount $TARGET_MOUNT
 
 ########################################################################
 
@@ -87,7 +102,6 @@ umount $DISTDIR
 
 echo "########################################################################"
 echo "  Voyage UGent Auto-Install complete. The system will halt in 5 secs."
-echo "  If you want to stop, please press Ctrl+C now !!"
 echo "########################################################################"
 sleep 5
 if [ $? != 0 ] ; then exit 1; fi
