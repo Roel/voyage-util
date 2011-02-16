@@ -1,3 +1,13 @@
+voyage-util (1:0.8-1ugent6) unstable; urgency=low
+
+  * Import upstream's 0.8-2 changes for format-cf.sh
+  * Fix autoinstall
+      - Flash ALIX LED's while installing.
+      - Recover hostname from installed system before formatting
+      - Change default target device node from hda to sda
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Wed, 16 Feb 2011 20:48:10 +0100
+
 voyage-util (1:0.8-1ugent5) unstable; urgency=low
 
   * Performance improvements in gyrid-usb.
