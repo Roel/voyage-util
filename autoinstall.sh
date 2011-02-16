@@ -35,7 +35,7 @@ fi
 source $PROFILE_FILE
 
 echo "########################################################################"
-echo "  WARNING: Voyage Linux Auto-Install will start in 5 seconds.  It will "
+echo "  WARNING: Voyage UGent Auto-Install will start in 5 seconds.  It will "
 echo "           erase your disk in $TARGET_DISK.  If you want to stop, please"
 echo "           press Ctrl+C now !!"
 echo "########################################################################"
@@ -86,10 +86,9 @@ cd $RUNDIR
 umount $DISTDIR
 
 echo "########################################################################"
-echo "  Voyage Linux Auto-Install completes. The system will reboot in 5 secs."
+echo "  Voyage UGent Auto-Install complete. The system will halt in 5 secs."
 echo "  If you want to stop, please press Ctrl+C now !!"
 echo "########################################################################"
 sleep 5
 if [ $? != 0 ] ; then exit 1; fi
-reboot
-
+halt

@@ -87,6 +87,6 @@ esac
 
 [ -b "$TARGET_DISK" ] && echo -e "$SFDISKCMD" | sfdisk "$TARGET_DISK"
 [ -b "$TARGET_PART" ] && { 
-	mkfs.ext2 $TARGET_PART
-	tune2fs -i 0 -c 0 $TARGET_PART -L ROOT_FS
+	mkfs.ext3 $TARGET_PART
+	tune2fs -c 1 $TARGET_PART -L ROOT_FS
 }
