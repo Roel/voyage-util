@@ -1,3 +1,9 @@
+voyage-util (1:0.8-1ugent7) unstable; urgency=low
+
+  * Synchronise time with netinstall server.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Thu, 17 Feb 2011 12:12:00 +0100
+
 voyage-util (1:0.8-1ugent6) unstable; urgency=low
 
   * Import upstream's 0.8-2 changes for format-cf.sh
