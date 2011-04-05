@@ -62,9 +62,9 @@ case $1 in
 			echo "No serial setting is supplied, using 9600"
 		fi
 		
-		echo -n "Setting up eth0 to 192.168.1.200 ... "
+		echo -n "Setting up eth0 to 192.168.1.2 ... "
 		ifdown eth0
-		ifconfig eth0 192.168.1.200 netmask 255.255.255.0 up 
+		ifconfig eth0 192.168.1.2 netmask 255.255.255.0 up
 		echo "Done."
 		
 		#echo -n "mounting /media ... "

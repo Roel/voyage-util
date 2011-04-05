@@ -101,10 +101,10 @@ cd $RUNDIR
 umount $DISTDIR
 
 /etc/init.d/ntp stop
-ntpdate 192.168.1.200
+ntpdate 192.168.1.2
 while [ $? -gt 0 ]; do
     sleep 10
-    ntpdate 192.168.1.200
+    ntpdate 192.168.1.2
 done
 
 echo "########################################################################"
