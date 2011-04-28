@@ -100,12 +100,10 @@ umount $TARGET_MOUNT
 cd $RUNDIR
 umount $DISTDIR
 
-/etc/init.d/ntp stop
-ntpdate 192.168.1.2
-while [ $? -gt 0 ]; do
-    sleep 10
-    ntpdate 192.168.1.2
-done
+if [ -f /etc/ntp.local.conf ]; then
+    /etc/init.d/ntp stop > /dev/null
+    ntpd -gq -c /etc/ntp.local.conf
+fi
 
 echo "########################################################################"
 echo "  Voyage UGent Auto-Install complete. The system will halt in 5 secs."

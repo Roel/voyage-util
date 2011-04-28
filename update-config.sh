@@ -92,3 +92,14 @@ reconfig_resolvconf() {
 
 }
 
+#
+#	Function reconfig_ntp()
+#	reconfigure ntp configuration files
+#	Params:	$1 - root directory of target
+#
+reconfig_ntp() {
+    if  [ -f $1/etc/ntp.pool.conf ] ; then
+        echo "Reconfiguring ntp configuration"
+        mv $1/etc/ntp.pool.conf $1/etc/ntp.conf
+    fi
+}
