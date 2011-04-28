@@ -61,10 +61,6 @@ set -e
 
 case $1 in
 	'start')
-		echo -n "Remounting / as read-write ... "
-		#/bin/mount / -o remount,rw
-		/usr/local/sbin/remountrw
-		echo "Done."
 		if [ -f /voyage.1st ] ; then
 				echo "First-time installation "
 				echo -n "Re-generating host ssh keys ... "
@@ -83,26 +79,10 @@ case $1 in
 		echo -n "Removing /etc/nologin ... "
 		/etc/init.d/rmnologin start
 		echo "Done."
-		#echo -n "Remounting / as read-only ... "
-		#/bin/mount / -o remount,ro
-		#/usr/local/sbin/remountro
-		#echo "Done."
 		start_leds
 		;;
 	'stop')
-		#if [ -f /etc/voyage.conf ] ; then
-        #	. /etc/voyage.conf
-        #	/usr/local/sbin/remountrw
-        #   	for DIR in $VOYAGE_SYSTEM_SYNCDIRS
-        #   	do
-        #       	echo -n "Synchronizing $DIR ... "
-		#		cp -Rp $DIR/* /ro$DIR/
-		#		echo "Done."
-		#	done
-		#	/usr/local/sbin/remountro           	
-		#fi
 
-		# Do nothing
 		;;
 	force-reload|restart)
 

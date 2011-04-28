@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 ### BEGIN INIT INFO
 # Provides:          voyage-pxe
 # Required-Start:    $all
@@ -75,14 +75,17 @@ case $1 in
 		#mount -n -t unionfs -o dirs=/cow=rw:/filesystem.squashfs=ro unionfs /media
 		#echo "Done."
 		
-		#/etc/init.d/nfs-user-server restart
+		rm -f /tftpboot/linux /tftpboot/initrd.img
+		cp /vmlinuz /tftpboot/linux
+		cp /initrd.img /tftpboot/initrd.img
+
 		/etc/init.d/nfs-kernel-server restart
-		/etc/init.d/atftpd restart
+		/etc/init.d/tftpd-hpa restart
+
 		;;
 	'stop')
-		#/etc/init.d/nfs-user-server stop
 		/etc/init.d/nfs-kernel-server stop
-		/etc/init.d/atftpd stop
+		/etc/init.d/tftpd-hpa stop
 		
 		#echo -n "Un-mounting /media ... "
 		#umount /media

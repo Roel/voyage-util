@@ -1,3 +1,0 @@
-#!/bin/sh
-/usr/local/sbin/remountro
-reboot -d -f -i
