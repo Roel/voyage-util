@@ -1,3 +1,10 @@
+voyage-util (1:0.9-1ugent1) unstable; urgency=low
+
+  * Import upstream's 0.9-1 changes.
+  * Replace ntpdate by plain ntpd.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Thu, 28 Apr 2011 19:37:26 +0200
+
 voyage-util (1:0.8-1ugent8) unstable; urgency=low
 
   * Change netinstall server IP to 192.168.1.2
