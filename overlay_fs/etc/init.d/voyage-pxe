@@ -80,12 +80,12 @@ case $1 in
 		cp /initrd.img /tftpboot/initrd.img
 
 		/etc/init.d/nfs-kernel-server restart
-		/etc/init.d/tftpd-hpa restart
+		/etc/init.d/atftpd restart
 
 		;;
 	'stop')
 		/etc/init.d/nfs-kernel-server stop
-		/etc/init.d/tftpd-hpa stop
+		/etc/init.d/atftpd stop
 		
 		#echo -n "Un-mounting /media ... "
 		#umount /media
