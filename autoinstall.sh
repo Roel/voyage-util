@@ -102,7 +102,8 @@ umount $DISTDIR
 
 if [ -f /etc/ntp.local.conf ]; then
     /etc/init.d/ntp stop > /dev/null
-    ntpd -gq -c /etc/ntp.local.conf
+    while [ "`ntpd -gq -c /etc/ntp.local.conf`" == "" ]; do echo -n; done
+    echo "Clock is synchronised, it is now:  `date`"
 fi
 
 echo "########################################################################"
