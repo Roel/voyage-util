@@ -10,7 +10,7 @@ fi
 DEFAULT_IP="`grep iburst $NTP_LOCAL | awk '{ print $2 }'`"
 
 if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    echo "Usage: ntpd-skip-time [-1] [server]"
+    echo "Usage: ntpd-sync-time [-1] [server]"
     echo ""
     echo "Options:"
     echo "   -1       Run the ntpd command only once. By default it runs until "

@@ -101,7 +101,7 @@ cd $RUNDIR
 umount $DISTDIR
 
 if [ -f /etc/ntp.local.conf ]; then
-    ntpd-skip-time
+    ntpd-sync-time
 fi
 
 echo "########################################################################"
