@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if [ "`ntpq -p`" == "No association ID's returned" ]; then
+    /etc/init.d/ntp restart
+fi
