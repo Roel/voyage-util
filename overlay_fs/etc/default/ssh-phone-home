@@ -1,0 +1,4 @@
+# ssh-phone-home configuration
+
+SSH_HOME_USER=""
+SSH_HOME_HOST=""
