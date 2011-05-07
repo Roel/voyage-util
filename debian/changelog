@@ -1,3 +1,12 @@
+voyage-util (1:0.9-1ugent3) unstable; urgency=low
+
+  * Add ntpd-sync-time script.
+  * Add ntp-restart script.
+  * Add ssh-phone-home script.
+  * Add postinst.d hook action to autoinstall.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Sat, 07 May 2011 14:36:03 +0200
+
 voyage-util (1:0.9-1ugent2) unstable; urgency=low
 
   * Revert to atftpd instead of tftpd-hpa.
