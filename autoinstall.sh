@@ -24,6 +24,8 @@ BOOTSTRAP_PART=1
 BOOTSTRAP="grub" 
 SYSTEM_BOOTSTRAP=$BOOTSTRAP
 
+export $TARGET_MOUNT
+
 INSTALL_PROFILE=alix
 if [ ! -z $1 ] ; then INSTALL_PROFILE=$1 ; fi
 
@@ -93,12 +95,34 @@ save_config_var VOYAGE_SYSTEM_CONSOLE VOYAGE_CONF_LIST
 
 $EXECDIR/copyfiles.sh
 cat /tmp/target-hostname > $TARGET_MOUNT/etc/hostname
-umount $TARGET_MOUNT
 
 ########################################################################
 
+if [ ! -d /tmp/postinst.d ]; then
+    mkdir /tmp/postinst.d
+fi
+
+mount -t nfs 192.168.1.2:/postinst.d /tmp/postinst.d &> /dev/null
+cd /tmp/postinst.d
+mkdir logs
+
+TARGET_HOSTNAME=`cat /tmp/target-hostname`
+echo -e "# Postinstall log of $TARGET_HOSTNAME\n" > /tmp/postinst.d/logs/$TARGET_HOSTNAME
+
+for i in `ls -1`; do
+    if [[ ! -d $i && -x $i ]]; then
+        ./$i &>> /tmp/postinst.d/logs/$TARGET_HOSTNAME
+    fi
+done
+
+########################################################################
+
+umount $TARGET_MOUNT
+
 cd $RUNDIR
 umount $DISTDIR
+
+########################################################################
 
 if [ -f /etc/ntp.local.conf ]; then
     ntpd-sync-time
