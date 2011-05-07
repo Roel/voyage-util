@@ -63,7 +63,7 @@ case $1 in
 	'start')
 		if [ -f /voyage.1st ] ; then
 				echo "First-time installation "
-				echo -n "Re-generating host ssh keys ... "
+				echo "Re-generating host ssh keys ... "
 				rm -f /etc/ssh/ssh_host_rsa_key
 				ssh-keygen -q -t rsa -f /etc/ssh/ssh_host_rsa_key -N '' || { echo "Fatal Error: Failed to generate RSA keypair" >&2; exit; }
 				rm -f /etc/ssh/ssh_host_dsa_key
@@ -71,6 +71,13 @@ case $1 in
 
 				#depmod -ae
 				depmod -a
+
+				echo "Updating /etc/hosts ..."
+				if [ ! -f /etc/hosts ]; then
+					echo "127.0.0.1  localhost" > /etc/hosts
+				elif [ "`grep 127.0.0.1 /etc/hosts`" == "" ]; then
+					echo "127.0.0.1  localhost" >> /etc/hosts
+				fi
 				
 				rm -f /voyage.1st
 				echo "Done."		
