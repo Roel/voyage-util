@@ -16,6 +16,10 @@ if [[ ! $SSH_HOME_USER || ! $SSH_HOME_HOST ]]; then
     exit 1
 fi
 
+if [ "$SSH_OPTIONS" != "" ]; then
+    SSH_OPTIONS="-o $SSH_OPTIONS"
+fi
+
 HOSTID=`hostname | sed -rn '/^.*[A-Za-z][0-9]{3}/{s/^.*[A-Za-z]([0-9]{3})$/\1/p}'`
 if [ "$HOSTID" == "" ]; then
     echo "Not starting ssh connection, bad hostname. Hostname should end with 3 numbers."
@@ -25,7 +29,7 @@ fi
 start() {
     if [ -f /root/.ssh/id_rsa ]; then
         echo "Starting ssh phone-home connection."
-        autossh -M 4${HOSTID}0 -f -NR 10${HOSTID}:127.0.0.1:22 ${SSH_HOME_USER}@${SSH_HOME_HOST}
+        autossh -M 4${HOSTID}0 -f ${SSH_OPTIONS} -NR 10${HOSTID}:127.0.0.1:22 ${SSH_HOME_USER}@${SSH_HOME_HOST}
     else
         echo "Not starting ssh connection, private key missing."
         exit 1
