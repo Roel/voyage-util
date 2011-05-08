@@ -24,7 +24,7 @@ BOOTSTRAP_PART=1
 BOOTSTRAP="grub" 
 SYSTEM_BOOTSTRAP=$BOOTSTRAP
 
-export $TARGET_MOUNT
+export TARGET_MOUNT
 
 INSTALL_PROFILE=alix
 if [ ! -z $1 ] ; then INSTALL_PROFILE=$1 ; fi
@@ -51,8 +51,8 @@ echo heartbeat > /sys/class/leds/alix\:3/trigger
 
 if [ ! -d $DISTDIR ] ; then mkdir $DISTDIR ; fi
 if [ ! -d $TARGET_MOUNT ] ; then mkdir $TARGET_MOUNT ; fi
-umount $DISTDIR > /dev/null
-umount $TARGET_MOUNT > /dev/null
+umount $DISTDIR &> /dev/null
+umount $TARGET_MOUNT &> /dev/null
 
 SQFS=$(find / -name "filesystem.squashfs" | head -n1)
 if [ ! -z $SQFS ] ; then
@@ -102,18 +102,17 @@ if [ ! -d /tmp/postinst.d ]; then
     mkdir /tmp/postinst.d
 fi
 
-mount -t nfs 192.168.1.2:/postinst.d /tmp/postinst.d &> /dev/null
-cd /tmp/postinst.d
-mkdir logs
+mount -t nfs 192.168.1.2:/postinst.d /tmp/postinst.d
 
-TARGET_HOSTNAME=`cat /tmp/target-hostname`
-echo -e "# Postinstall log of $TARGET_HOSTNAME\n" > /tmp/postinst.d/logs/$TARGET_HOSTNAME
+if [ $? -eq 0 ]; then
+    cd /tmp/postinst.d
 
-for i in `ls -1`; do
-    if [[ ! -d $i && -x $i ]]; then
-        ./$i &>> /tmp/postinst.d/logs/$TARGET_HOSTNAME
-    fi
-done
+    for i in `ls -1`; do
+        if [[ ! -d $i && -x $i ]]; then
+            ./$i
+        fi
+    done
+fi
 
 ########################################################################
 
