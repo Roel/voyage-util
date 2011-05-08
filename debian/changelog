@@ -1,3 +1,14 @@
+voyage-util (1:0.9-1ugent4) unstable; urgency=low
+
+  * Add better solution for /etc/hosts to voyage-util initscript.
+  * Add update-rc.d call for ssh-phone-home to postinst.
+  * Remove voyage.install flag after installation.
+  * Mount postinstall hooks directory on installation image.
+  * Use full path to ntpd-sync-time in autoinstall script.
+  * Mount postinstall.d over NFS during installation and execute hooks.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Sun, 08 May 2011 10:50:52 +0200
+
 voyage-util (1:0.9-1ugent3) unstable; urgency=low
 
   * Add ntpd-sync-time script.
