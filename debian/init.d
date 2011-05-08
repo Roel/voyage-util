@@ -82,6 +82,15 @@ case $1 in
 				rm -f /voyage.1st
 				echo "Done."		
 		fi
+
+		if [ -f /voyage.install ]; then
+				echo "Mounting NFS postinstall directory ..."
+				if [ ! -d /postinst.d ]; then
+					mkdir /postinst.d
+				fi
+				mount tmpfs -t tmpfs /postinst.d
+				echo "# Place post-install hooks here." > /postinst.d/README
+		fi
 		
 		echo -n "Removing /etc/nologin ... "
 		/etc/init.d/rmnologin start
