@@ -37,6 +37,8 @@ esac
 
 #DEBHELPER#
 
+update-rc.d ssh-phone-home defaults 97 02
+
 exit 0
 
 
