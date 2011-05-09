@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if [ `ps aux | grep 'wvdial\|pppd' | grep -v grep | wc -l` -eq 0 ]; then
+    /etc/init.d/mobile-internet restart
+fi
