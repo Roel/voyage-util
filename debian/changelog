@@ -1,3 +1,11 @@
+voyage-util (1:0.9-1ugent7) unstable; urgency=low
+
+  * Check mobile internet every two minutes.
+  * Reboot system when the Sierra driver crashed
+     (cf. http://marc.info/?l=linux-usb&m=128472134332226&w=2)
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Mon, 11 Jul 2011 21:25:35 +0200
+
 voyage-util (1:0.9-1ugent6) unstable; urgency=low
 
   * Update dnsmasq configuration to provide DHCP on eth0.
