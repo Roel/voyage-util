@@ -1,5 +1,20 @@
 #!/bin/bash
 
+LAST_CRASHED=`date --date="$(grep -aE "vmunix(.*)sierra_submit_rx_urb(.*)failed" /var/log/syslog | tail -n 1 | awk '{ print $1,$2,$3 }')" "+%s"`
+NOW=`date "+%s"`
+
+SINCE_CRASH=$(expr $NOW - $LAST_CRASHED)
+
+if [[ $SINCE_CRASH -le 150 ]]; then
+    if [ -f /tmp/mobile-internet-enabled ]; then
+        if [ `ifconfig | grep ppp0 | wc -l` -eq 0 ]; then
+            /sbin/reboot
+        fi
+    fi
+fi
+
 if [ `ps aux | grep 'wvdial\|pppd' | grep -v grep | wc -l` -eq 0 ]; then
-    /etc/init.d/mobile-internet restart
+    if [ -f /tmp/mobile-internet-enabled ]; then
+        /etc/init.d/mobile-internet restart
+    fi
 fi
