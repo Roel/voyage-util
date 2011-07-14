@@ -14,3 +14,6 @@
 
 # Call the mobile-internet restart script every 2 minutes (only restart if necessary)
 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59 * * * * root /usr/local/sbin/mobile-internet-restart &> /dev/null
+
+# Call the autoSSH restart script every 15 minutes (only restart if necessary)
+4,19,34,49 * * * * root /usr/local/sbin/autossh-restart &> /dev/null
