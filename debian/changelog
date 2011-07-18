@@ -1,3 +1,9 @@
+voyage-util (1:0.9-1ugent8) unstable; urgency=low
+
+  * Add restart script for ssh phone-home connection.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Thu, 14 Jul 2011 09:40:13 +0200
+
 voyage-util (1:0.9-1ugent7) unstable; urgency=low
 
   * Check mobile internet every two minutes.
