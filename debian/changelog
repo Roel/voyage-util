@@ -1,3 +1,10 @@
+voyage-util (1:0.9-1ugent9) unstable; urgency=low
+
+  * Fix the mobile-internet restart script to only restart if the modem
+     actually crashed.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Sat, 30 Jul 2011 16:36:33 +0200
+
 voyage-util (1:0.9-1ugent8) unstable; urgency=low
 
   * Add restart script for ssh phone-home connection.
