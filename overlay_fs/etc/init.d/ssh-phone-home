@@ -38,12 +38,12 @@ start() {
 }
 
 stop() {
-    if [ `ps aux | grep autossh | grep -v grep | wc -l` -gt 0 ]; then
+    if [ `ps aux | grep "autossh/autossh" | grep -v grep | wc -l` -gt 0 ]; then
         echo "Stopping ssh phone-home connection."
         if [ -f /tmp/ssh-phone-home-enabled ]; then
             rm /tmp/ssh-phone-home-enabled
         fi
-        kill `ps aux | grep autossh | grep -v grep | head -n 1 | awk '{print $2}'`
+        kill `ps aux | grep "autossh/autossh" | grep -v grep | head -n 1 | awk '{print $2}'`
     fi
 }
 

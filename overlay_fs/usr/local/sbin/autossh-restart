@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ `ps aux | grep autossh | grep -v grep | wc -l` -eq 0 ]; then
+if [ `ps aux | grep "autossh/autossh" | grep -v grep | wc -l` -eq 0 ]; then
     if [ -f /tmp/ssh-phone-home-enabled ]; then
         /etc/init.d/ssh-phone-home restart
     fi
