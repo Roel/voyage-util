@@ -12,7 +12,7 @@ if [ -f /etc/default/ssh-phone-home ]; then
     . /etc/default/ssh-phone-home
 fi
 
-if [[ ! $SSH_HOME_USER || ! $SSH_HOME_HOST ]]; then
+if [[ ! $SSH_HOME_USER || ! $SSH_HOME_HOST || ! $SSH_HOME_PORT ]]; then
     exit 1
 fi
 
@@ -30,7 +30,7 @@ start() {
     if [ -f /root/.ssh/id_rsa ]; then
         echo "Starting ssh phone-home connection."
         touch /tmp/ssh-phone-home-enabled
-        autossh -M 4${HOSTID}0 -f ${SSH_OPTIONS} -NR 10${HOSTID}:127.0.0.1:22 ${SSH_HOME_USER}@${SSH_HOME_HOST}
+        autossh -M 4${HOSTID}0 -f -p ${SSH_HOME_PORT} ${SSH_OPTIONS} -NR 10${HOSTID}:127.0.0.1:22 ${SSH_HOME_USER}@${SSH_HOME_HOST}
     else
         echo "Not starting ssh connection, private key missing."
         exit 1

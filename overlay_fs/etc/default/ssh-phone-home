@@ -2,5 +2,6 @@
 
 SSH_HOME_USER=""
 SSH_HOME_HOST=""
+SSH_HOME_PORT=22
 
 SSH_OPTIONS="StrictHostKeyChecking=no"
