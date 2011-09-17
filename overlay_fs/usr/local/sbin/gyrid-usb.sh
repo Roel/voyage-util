@@ -106,16 +106,17 @@ temporary_usb() {
         echo -ne "Uptime:\n`uptime`\n\n" >> $DATAPATH/meta.txt
 
         #Copy over the logs.
-        mkdir -p $DATAPATH/original_logs/var_log
-        mkdir -p $DATAPATH/original_logs/etc
+        mkdir -p $DATAPATH/original_logs
+        mkdir -p $DATAPATH/original_logs/gyrid
         mkdir -p $DATAPATH/merged_logs
-        rsync -a --copy-links /var/log/ $DATAPATH/original_logs/var_log
-        rsync -a --copy-links /etc/ $DATAPATH/original_logs/etc
+        tar --dereference --hard-dereference --exclude=gyrid -cj -f $DATAPATH/original_logs/var_log.tar.bz2 /var/log/
+        tar --dereference --hard-dereference -cj -f $DATAPATH/original_logs/etc.tar.bz2 /etc/
+        rsync -a --copy-links /var/log/gyrid/* $DATAPATH/original_logs/gyrid
 
         #Merge the logs.
-        for i in `ls -1 $DATAPATH/original_logs/var_log/gyrid | grep -E "([0-9A-F]){12}"`; do
+        for i in `ls -1 $DATAPATH/original_logs/gyrid | grep -E "([0-9A-F]){12}"`; do
             mkdir -p $DATAPATH/merged_logs/$i
-            cd $DATAPATH/original_logs/var_log/gyrid/$i
+            cd $DATAPATH/original_logs/gyrid/$i
 
                 lines=`/usr/local/sbin/gyrid-unzip.py $DATAPATH/merged_logs/$i`
 
