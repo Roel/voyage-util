@@ -1,3 +1,9 @@
+voyage-util (1:0.9-1ugent12) unstable; urgency=low
+
+  * Broaden regex matching of sierra modem crashes.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Sun, 13 Nov 2011 11:29:28 +0100
+
 voyage-util (1:0.9-1ugent11) unstable; urgency=low
 
   * Archive contents of /etc/ and /var/log/ on USB readout.
