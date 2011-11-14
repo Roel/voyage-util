@@ -3,7 +3,7 @@
 LAST_CRASH_LINE=`grep -aE "vmunix(.*)sierra(.*)failed" /var/log/syslog | tail -n 1 | awk '{ print $1,$2,$3 }'`
 
 if [ "$LAST_CRASH_LINE" != "" ]; then
-    LAST_CRASHED=`date --date="$(grep -aE "vmunix(.*)sierra_submit_rx_urb(.*)failed" /var/log/syslog | tail -n 1 | awk '{ print $1,$2,$3 }')" "+%s"`
+    LAST_CRASHED=`date --date="$(grep -aE "vmunix(.*)sierra(.*)failed" /var/log/syslog | tail -n 1 | awk '{ print $1,$2,$3 }')" "+%s"`
     NOW=`date "+%s"`
     SINCE_CRASH=$(expr $NOW - $LAST_CRASHED)
 
