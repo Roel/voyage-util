@@ -1,3 +1,9 @@
+voyage-util (1:0.9-1ugent13) unstable; urgency=low
+
+  * Really fix issue from previous release.
+
+ -- Roel Huybrechts <roel.huybrechts@ugent.be>  Mon, 14 Nov 2011 22:20:49 +0100
+
 voyage-util (1:0.9-1ugent12) unstable; urgency=low
 
   * Broaden regex matching of sierra modem crashes.
