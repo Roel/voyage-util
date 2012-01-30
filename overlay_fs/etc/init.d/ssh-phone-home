@@ -20,7 +20,7 @@ if [ "$SSH_OPTIONS" != "" ]; then
     SSH_OPTIONS="-o $SSH_OPTIONS"
 fi
 
-HOSTID=`hostname | sed -rn '/^.*[A-Za-z][0-9]{3}/{s/^.*[A-Za-z]([0-9]{3})$/\1/p}'`
+HOSTID=`hostname | sed -rn '/[0-9]{3}/{s/^.*([0-9]{3})$/\1/p}'`
 if [ "$HOSTID" == "" ]; then
     echo "Not starting ssh connection, bad hostname. Hostname should end with 3 numbers."
     exit 1
